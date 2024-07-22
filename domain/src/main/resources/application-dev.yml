@@ -4,11 +4,11 @@ spring:
     url: 'jdbc:h2:mem:jwitter'
     username: sa
     password:
+    proxy-name: H2
   h2:
     console:
       enabled: true
       path: /h2-console
-
   jpa:
     database-platform: org.hibernate.dialect.H2Dialect
     hibernate:
@@ -17,10 +17,17 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.H2Dialect
         format_sql: true
-        show_sql: true
+        show_sql: false
         generate_statistics: true
         stats:
           factory: org.zerobase.jwitter.domain.stat.TransactionStatisticsFactory
+  redis:
+    host: localhost
+    port: 6379
+    session:
+      prefix: session_token
+      ttl: 1800
+    score: 200
 
 logging:
   level:

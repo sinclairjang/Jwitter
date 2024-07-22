@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ReflectionUtils;
@@ -23,7 +24,9 @@ import java.lang.reflect.Method;
 @Component
 public class DatasourceProxyBeanPostProcessor implements BeanPostProcessor {
     private final Logger log = LoggerFactory.getLogger(getClass());
-    private static final String DATA_SOURCE_PROXY_NAME = "H2_PROXY";
+
+    @Value("${spring.datasource.proxy-name}")
+    private String DATA_SOURCE_PROXY_NAME;
 
     @Override
     public Object postProcessAfterInitialization(
@@ -38,7 +41,7 @@ public class DatasourceProxyBeanPostProcessor implements BeanPostProcessor {
     }
 
     private class ProxyDataSourceInterceptor implements MethodInterceptor {
-        private DataSource dataSource;
+        private final DataSource dataSource;
 
         ProxyDataSourceInterceptor(DataSource dataSource) {
             PrettyQueryEntryCreator creator = new PrettyQueryEntryCreator();
@@ -79,7 +82,7 @@ public class DatasourceProxyBeanPostProcessor implements BeanPostProcessor {
     }
 
     private static class PrettyQueryEntryCreator extends DefaultQueryLogEntryCreator {
-        private Formatter formatter = FormatStyle.BASIC.getFormatter();
+        private final Formatter formatter = FormatStyle.BASIC.getFormatter();
 
         @Override
         protected String formatQuery(String query) {

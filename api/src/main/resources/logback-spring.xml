@@ -22,6 +22,9 @@
     <logger name="org.springframework" level="info"/>
     <logger name="org.hibernate" level="info"/>
     <logger name="org.hibernate.engine.internal.StatisticalLoggingSessionEventListener" level="info"/>
+    <logger name="org.springframework.security" level="trace" additivity="false">
+        <appender-ref ref="CONSOLE" />
+    </logger>
     <root level="info">
         <appender-ref ref="CONSOLE"/>
         <appender-ref ref="FILE"/>
