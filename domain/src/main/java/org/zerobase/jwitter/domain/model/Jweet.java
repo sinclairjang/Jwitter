@@ -1,7 +1,7 @@
 package org.zerobase.jwitter.domain.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.databind.annotation.JsonAppend;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -12,10 +12,13 @@ import javax.validation.constraints.Size;
 import java.util.HashSet;
 import java.util.Set;
 
+@JsonAppend(attrs = {
+        @JsonAppend.Attr(value = "jweetComments")
+})
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@JsonIgnoreProperties(value = {"id", "author"}, allowSetters = true)
+@JsonIgnoreProperties(value = {"id", "author", "jweetComments"}, allowSetters = true)
 @Data
 @Entity
 @Table(name = "JWEETS")

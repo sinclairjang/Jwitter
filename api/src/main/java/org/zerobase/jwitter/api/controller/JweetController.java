@@ -2,7 +2,6 @@ package org.zerobase.jwitter.api.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -35,9 +34,11 @@ public class JweetController {
     }
 
     @PreAuthorize("@writeJweetPermission.hasPermission(authentication, #jweet, '')")
-    @PutMapping()
-    public ResponseEntity<?> modifyJweet(@RequestBody @Valid Jweet jweet) {
-        jweetCRUDService.modifyJweet(jweet);
+    @PutMapping("/{id}")
+    public ResponseEntity<?> modifyJweet(
+            @PathVariable Long jweetId,
+            @RequestBody @Valid Jweet jweet) {
+        jweetCRUDService.modifyJweet(jweetId, jweet);
         return ResponseEntity.ok().build();
     }
 
@@ -56,20 +57,42 @@ public class JweetController {
     }
 
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    @GetMapping("/{jweetId}/comment/{commentId}")
+    public ResponseEntity<?> readJweetComment(
+            @PathVariable Long jweetId,
+            @PathVariable Long commentId
+    ) {
+        Optional<JweetComment> jweetComment =
+                jweetCRUDService.readJweetComment(jweetId, commentId);
+        return ResponseEntity.ok(jweetComment);
+    }
+
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @PostMapping("/{id}/comment")
-    public ResponseEntity<?> commentJweet(
+    public ResponseEntity<?> postJweetComment(
             @PathVariable Long id,
             @RequestBody @Valid JweetComment jweetComment) {
-        jweetCRUDService.commentJweet(id, jweetComment);
+        jweetCRUDService.postJweetComment(id, jweetComment);
+        return ResponseEntity.ok().build();
+    }
+
+    @PreAuthorize("@writeJweetCommentPermission.hasPermission(authentication, #jweetComment, '')")
+    @PutMapping("/{jweetId}/comment/{commentId}")
+    public ResponseEntity<?> modifyJweetComment(
+            @PathVariable Long jweetId,
+            @PathVariable Long commentId,
+            @RequestBody JweetComment jweetComment
+    ) {
+        jweetCRUDService.modifyJweetComment(jweetId, commentId, jweetComment);
         return ResponseEntity.ok().build();
     }
 
     @PreAuthorize("@writeJweetCommentPermission.hasPermission(authentication, #commentId, 'JweetComment', '')")
     @DeleteMapping("/{jweetId}/comment/{commentId}")
-    public ResponseEntity<?> deleteCommentJweet(
+    public ResponseEntity<?> deleteJweetComment(
             @PathVariable Long jweetId,
             @PathVariable  Long commentId) {
-        jweetCRUDService.deleteCommentJweet(jweetId, commentId);
+        jweetCRUDService.deleteJweetComment(jweetId, commentId);
         return ResponseEntity.ok().build();
     }
 }

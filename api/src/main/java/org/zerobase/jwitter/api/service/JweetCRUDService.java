@@ -1,16 +1,14 @@
 package org.zerobase.jwitter.api.service;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.validation.annotation.Validated;
 import org.zerobase.jwitter.domain.model.Jweet;
 import org.zerobase.jwitter.domain.model.JweetComment;
 import org.zerobase.jwitter.domain.model.User;
 import org.zerobase.jwitter.domain.model.cache.HomeTimelineCache;
 import org.zerobase.jwitter.domain.model.cache.JweetCache;
-import org.zerobase.jwitter.domain.repository.FollowRepository;
+import org.zerobase.jwitter.domain.repository.JweetCommentRepository;
 import org.zerobase.jwitter.domain.repository.JweetRepository;
 import org.zerobase.jwitter.domain.repository.cache.HomeTimelineCacheRepository;
 import org.zerobase.jwitter.domain.repository.cache.JweetCacheRepository;
@@ -25,6 +23,7 @@ public class JweetCRUDService {
     private final HomeTimelineCacheRepository homeTimelineCacheRepository;
     private final JweetCacheRepository jweetCacheRepository;
     private final FollowService followService;
+    private final JweetCommentRepository jweetCommentRepository;
 
     public Optional<Jweet> readJweet(Long id) {
         return jweetRepository.findById(id);
@@ -45,9 +44,12 @@ public class JweetCRUDService {
     }
 
     @Transactional
-    public void modifyJweet(Jweet jweet) {
-        Jweet persistentJweet = jweetRepository.findById(jweet.getId()).orElseThrow(
-                () -> new RuntimeException("Modify-requested Jweet doesn't exist. ")
+    public void modifyJweet(Long jweetId, Jweet jweet) {
+        Jweet persistentJweet = jweetRepository.findById(jweetId).orElseThrow(
+                () -> new RuntimeException(
+                        String.format("Jweet %d doesn't exist.",
+                                jweet.getId())
+                )
         );
         Iterable<User> followers = followService.getFollowers(persistentJweet.getAuthorId());
         if (!persistentJweet.getText().equals(jweet.getText())) {
@@ -79,7 +81,10 @@ public class JweetCRUDService {
     @Transactional
     public void deleteJweet(Long id) {
         Jweet persistentJweet = jweetRepository.findById(id).orElseThrow(
-                () -> new RuntimeException("Modify-requested Jweet doesn't exist."));
+                () -> new RuntimeException(
+                        String.format("Jweet %d doesn't exist.", id)
+                )
+        );
         Iterable<User> followers = followService.getFollowers(persistentJweet.getAuthorId());
         followers.forEach(follower -> {
             homeTimelineCacheRepository.deleteById(String.valueOf(follower.getId()));
@@ -91,7 +96,10 @@ public class JweetCRUDService {
     @Transactional
     public void likeJweet(Long id) {
         Jweet persistentJweet = jweetRepository.findById(id).orElseThrow(
-                () -> new RuntimeException("Modify-requested Jweet doesn't exist."));
+                () -> new RuntimeException(
+                        String.format("Jweet %d doesn't exist.", id)
+                )
+        );
         persistentJweet.setLikes(persistentJweet.getLikes() + 1);
         Iterable<User> followers = followService.getFollowers(persistentJweet.getAuthorId());
         followers.forEach(follower -> {
@@ -105,19 +113,53 @@ public class JweetCRUDService {
         jweetRepository.save(persistentJweet);
     }
 
+    public Optional<JweetComment> readJweetComment(Long jweetId,
+                                                   Long commentId) {
+        jweetRepository.findById(jweetId).orElseThrow(
+                () -> new RuntimeException(
+                        String.format("Jweet %d doesn't exist.", jweetId)
+                )
+        );
+        return jweetCommentRepository.findById(commentId);
+    }
+
     @Transactional
-    public void commentJweet(Long jweetId, JweetComment comment) {
+    public void postJweetComment(Long jweetId, JweetComment comment) {
         Jweet persistentJweet =
                 jweetRepository.findById(jweetId).orElseThrow(
-                () -> new RuntimeException("Modify-requested Jweet doesn't exist."));
+                        () -> new RuntimeException(
+                                String.format("Jweet %d doesn't exist.", jweetId)
+                        )
+                );
         persistentJweet.addJweetComments(comment);
     }
 
     @Transactional
-    public void deleteCommentJweet(Long jweetId, Long commentId) {
-        Jweet persistentJweet =
-                jweetRepository.findById(jweetId).orElseThrow(
-                        () -> new RuntimeException("Modify-requested Jweet doesn't exist."));
-        persistentJweet.getJweetComments().remove(JweetComment.builder().id(commentId).build());
+    public void modifyJweetComment(Long jweetId,
+                                   Long commentId,
+                                   JweetComment jweetComment) {
+        jweetRepository.findById(jweetId).orElseThrow(
+                () -> new RuntimeException(
+                        String.format("Jweet %d doesn't exist.", jweetId)
+                )
+        );
+       JweetComment persistentComment =
+               jweetCommentRepository.findById(commentId).orElseThrow(
+               () -> new RuntimeException(
+                       String.format("Jweet comment %d doesn't exist.",
+                               commentId)
+               )
+       );
+        persistentComment.setText(jweetComment.getText());
+    }
+
+    @Transactional
+    public void deleteJweetComment(Long jweetId, Long commentId) {
+        jweetRepository.findById(jweetId).orElseThrow(
+                () -> new RuntimeException(
+                        String.format("Jweet %d doesn't exist.", jweetId)
+                )
+        );
+        jweetCommentRepository.deleteById(commentId);
     }
 }
