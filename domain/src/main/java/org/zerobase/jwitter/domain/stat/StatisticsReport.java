@@ -11,12 +11,12 @@ import java.util.concurrent.TimeUnit;
 
 public class StatisticsReport {
     private final Logger LOGGER = LoggerFactory.getLogger(getClass());
-    private MetricRegistry metricRegistry = new MetricRegistry();
-    private Histogram connectionCountHistogram = metricRegistry.
+    private final MetricRegistry metricRegistry = new MetricRegistry();
+    private final Histogram connectionCountHistogram = metricRegistry.
             histogram("connectionCountHistogram");
-    private Timer transactionTimer = metricRegistry.
+    private final Timer transactionTimer = metricRegistry.
             timer("transactionTimer");
-    private Slf4jReporter logReporter = Slf4jReporter
+    private final Slf4jReporter logReporter = Slf4jReporter
             .forRegistry(metricRegistry)
             .outputTo(LOGGER)
             .build();

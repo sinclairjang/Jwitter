@@ -44,7 +44,7 @@ public class JweetCRUDService {
     }
 
     @Transactional
-    public void modifyJweet(Long jweetId, Jweet jweet) {
+    public void editJweet(Long jweetId, Jweet jweet) {
         Jweet persistentJweet = jweetRepository.findById(jweetId).orElseThrow(
                 () -> new RuntimeException(
                         String.format("Jweet %d doesn't exist.",
@@ -135,9 +135,9 @@ public class JweetCRUDService {
     }
 
     @Transactional
-    public void modifyJweetComment(Long jweetId,
-                                   Long commentId,
-                                   JweetComment jweetComment) {
+    public void editJweetComment(Long jweetId,
+                                 Long commentId,
+                                 JweetComment jweetComment) {
         jweetRepository.findById(jweetId).orElseThrow(
                 () -> new RuntimeException(
                         String.format("Jweet %d doesn't exist.", jweetId)

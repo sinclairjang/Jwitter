@@ -3,6 +3,7 @@ package org.zerobase.jwitter.api.controller;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.zerobase.jwitter.api.service.JweetCRUDService;
@@ -35,10 +36,10 @@ public class JweetController {
 
     @PreAuthorize("@writeJweetPermission.hasPermission(authentication, #jweet, '')")
     @PutMapping("/{id}")
-    public ResponseEntity<?> modifyJweet(
+    public ResponseEntity<?> editJweet(
             @PathVariable Long jweetId,
             @RequestBody @Valid Jweet jweet) {
-        jweetCRUDService.modifyJweet(jweetId, jweet);
+        jweetCRUDService.editJweet(jweetId, jweet);
         return ResponseEntity.ok().build();
     }
 
@@ -78,12 +79,12 @@ public class JweetController {
 
     @PreAuthorize("@writeJweetCommentPermission.hasPermission(authentication, #jweetComment, '')")
     @PutMapping("/{jweetId}/comment/{commentId}")
-    public ResponseEntity<?> modifyJweetComment(
+    public ResponseEntity<?> editJweetComment(
             @PathVariable Long jweetId,
             @PathVariable Long commentId,
             @RequestBody JweetComment jweetComment
     ) {
-        jweetCRUDService.modifyJweetComment(jweetId, commentId, jweetComment);
+        jweetCRUDService.editJweetComment(jweetId, commentId, jweetComment);
         return ResponseEntity.ok().build();
     }
 

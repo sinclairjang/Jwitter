@@ -8,6 +8,8 @@ dependencies {
     implementation("mysql:mysql-connector-java")
     implementation("io.dropwizard.metrics:metrics-core")
     implementation("net.ttddyy:datasource-proxy:1.10")
+    implementation("com.fasterxml.jackson.core:jackson-annotations:2.14.2")
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.14.2")
     runtimeOnly("com.h2database:h2")
 }
 

@@ -56,7 +56,7 @@ public class DatasourceProxyBeanPostProcessor implements BeanPostProcessor {
                     .afterMethod(executionContext -> {
                         Method method = executionContext.getMethod();
                         Class<?> targetClass = executionContext.getTarget().getClass();
-                        log.info("JDBC: " + targetClass.getSimpleName() + "#" + method.getName());
+                        log.debug("JDBC: " + targetClass.getSimpleName() + "#" + method.getName());
                     })
                     .afterQuery((execInfo, queryInfoList) -> {
                         log.info("Query took " + execInfo.getElapsedTime() +
