@@ -15,6 +15,7 @@ import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.BeanPostProcessor;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ReflectionUtils;
 
@@ -30,7 +31,7 @@ public class DatasourceProxyBeanPostProcessor implements BeanPostProcessor {
 
     @Override
     public Object postProcessAfterInitialization(
-            Object bean, String beanName) throws BeansException {
+            @NonNull Object bean, @NonNull String beanName) throws BeansException {
         if (bean instanceof DataSource && !(bean instanceof ProxyDataSource)) {
             ProxyFactory factory = new ProxyFactory(bean);
             factory.setProxyTargetClass(true);

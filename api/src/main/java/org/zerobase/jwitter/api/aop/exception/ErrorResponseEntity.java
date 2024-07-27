@@ -19,4 +19,13 @@ public class ErrorResponseEntity {
                         .message(e.getMessage())
                         .build());
     }
+
+    public static ResponseEntity<ErrorResponseEntity> toResponseEntity(RestException e) {
+
+        return ResponseEntity
+                .status(e.getHttpStatus())
+                .body(ErrorResponseEntity.builder()
+                        .message(e.getMessage())
+                        .build());
+    }
 }

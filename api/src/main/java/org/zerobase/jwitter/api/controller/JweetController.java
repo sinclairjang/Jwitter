@@ -1,9 +1,11 @@
 package org.zerobase.jwitter.api.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.zerobase.jwitter.api.service.JweetCRUDService;
@@ -23,8 +25,7 @@ public class JweetController {
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @GetMapping("/{id}")
     public ResponseEntity<?> readJweet(@PathVariable Long id) {
-        Optional<Jweet> jweet = jweetCRUDService.readJweet(id);
-        return ResponseEntity.of(jweet);
+        return ResponseEntity.ok(jweetCRUDService.readJweet(id));
     }
 
     @PreAuthorize("@writeJweetPermission.hasPermission(authentication, #jweet, '')")
@@ -34,8 +35,8 @@ public class JweetController {
         return ResponseEntity.ok().build();
     }
 
-    @PreAuthorize("@writeJweetPermission.hasPermission(authentication, #jweet, '')")
-    @PutMapping("/{id}")
+    @PreAuthorize("@writeJweetPermission.hasPermission(authentication, #jweetId, 'Jweet', '')")
+    @PutMapping("/{jweetId}")
     public ResponseEntity<?> editJweet(
             @PathVariable Long jweetId,
             @RequestBody @Valid Jweet jweet) {
@@ -58,14 +59,13 @@ public class JweetController {
     }
 
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
-    @GetMapping("/{jweetId}/comment/{commentId}")
-    public ResponseEntity<?> readJweetComment(
+    @GetMapping("/{jweetId}/comment")
+    public Page<JweetComment> readJweetComment(
             @PathVariable Long jweetId,
-            @PathVariable Long commentId
+            @RequestParam int page,
+            @RequestParam int size
     ) {
-        Optional<JweetComment> jweetComment =
-                jweetCRUDService.readJweetComment(jweetId, commentId);
-        return ResponseEntity.ok(jweetComment);
+        return jweetCRUDService.readJweetComment(jweetId, PageRequest.of(page, size));
     }
 
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")

@@ -1,0 +1,14 @@
+{
+  "username": "avery",
+  "email": "avery@gmail.com",
+  "password": 1004,
+  "passwordConfirm": 1004,
+  "roles": [
+    {
+      "name": "admin"
+    },
+    {
+      "name": "user"
+    }
+  ]
+}
