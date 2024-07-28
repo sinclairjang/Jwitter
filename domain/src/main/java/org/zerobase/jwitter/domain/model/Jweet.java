@@ -40,6 +40,7 @@ public class Jweet {
 
     private Long likes = 0L;
 
+    @Column(updatable = false)
     private Long createdAt; // unix time
 
     @OneToMany(

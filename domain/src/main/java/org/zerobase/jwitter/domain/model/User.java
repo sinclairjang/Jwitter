@@ -2,7 +2,7 @@ package org.zerobase.jwitter.domain.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
-import org.zerobase.jwitter.domain.config.validation.Password;
+import org.zerobase.jwitter.domain.aop.validation.Password;
 
 import javax.persistence.*;
 import javax.validation.constraints.Email;

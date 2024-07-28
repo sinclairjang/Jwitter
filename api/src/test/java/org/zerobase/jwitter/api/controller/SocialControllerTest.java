@@ -12,7 +12,6 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.zerobase.jwitter.domain.model.User;
-import org.zerobase.jwitter.domain.repository.JweetCommentRepository;
 
 import java.io.File;
 import java.io.IOException;
@@ -23,22 +22,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
 import static org.junit.jupiter.api.Assertions.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @Slf4j
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @AutoConfigureMockMvc()
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @SpringBootTest
-class JweetControllerTest {
-    @Autowired
-    private MockMvc mockMvc;
+class SocialControllerTest {
 
     @Autowired
-    private JweetCommentRepository jweetCommentRepository;
+    private MockMvc mockMvc;
 
     private final Map<String, String> authKeymap = new HashMap<>();
 
@@ -60,7 +58,7 @@ class JweetControllerTest {
             TypeReference<List<User>> typeReference = new TypeReference<List<User>>() {
             };
             InputStream inputStream =
-                    JweetControllerTest.class.getResourceAsStream(filePath);
+                    SocialControllerTest.class.getResourceAsStream(filePath);
             return objectMapper.readValue(inputStream, typeReference);
         }
 
@@ -110,127 +108,89 @@ class JweetControllerTest {
 
     @Order(100)
     @Test
-    void young_post_a_jweet() throws Exception {
-        String json = "{\"authorId\":1, \"text\":\"G'day!\"}";
-        mockMvc.perform(post("http://localhost:8080/v1/jweet")
-                        .header("Authorization", authKeymap.get("young"))
-                        .content(json)
-                        .contentType((MediaType.APPLICATION_JSON)))
+    void young_follows_hans() throws Exception {
+        mockMvc.perform(post("http://localhost:8080/v1/social/follow")
+                        .param("followerId", "1")
+                        .param("followeeId", "2")
+                        .header("Authorization", authKeymap.get("young")))
                 .andExpect(status().isOk());
     }
 
     @Order(101)
     @Test
-    void hans_reads_young_jweet() throws Exception {
-        ObjectMapper objectMapper = new ObjectMapper();
-        mockMvc.perform(get("http://localhost:8080/v1/jweet/1")
-                        .header("Authorization", authKeymap.get("hans"))
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andDo(result -> log.info(result.getResponse().getContentAsString()));
+    void young_is_not_authorized_to_follow_hans_as_avery() throws Exception {
+        mockMvc.perform(post("http://localhost:8080/v1/social/follow")
+                        .param("followerId", "3")
+                        .param("followeeId", "2")
+                        .header("Authorization", authKeymap.get("young")))
+                .andExpect(status().isForbidden());
     }
 
     @Order(102)
-    @Test()
-    void hans_reads_not_existing_jweet() throws Exception {
-        ObjectMapper objectMapper = new ObjectMapper();
-        mockMvc.perform(get("http://localhost:8080/v1/jweet/2")
-                        .header("Authorization", authKeymap.get("hans"))
+    @Test
+    void young_cant_follow_himself() throws Exception {
+        mockMvc.perform(post("http://localhost:8080/v1/social/follow")
+                        .param("followerId", "1")
+                        .param("followeeId", "1")
+                        .header("Authorization", authKeymap.get("young")))
+                .andExpect(status().isBadRequest())
+                .andDo(result -> log.info(result.getResponse().getContentAsString()));
+    }
+
+    @Order(103)
+    @Test
+    void young_sees_his_followee_hans() throws Exception {
+        mockMvc.perform(get("http://localhost:8080/v1/social/all_followees/1")
+                        .header("Authorization", authKeymap.get("young"))
                         .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isNotFound())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].username").value("hans"))
+                .andDo(result -> log.info(result.getResponse().getContentAsString()));
+    }
+
+    @Order(104)
+    @Test
+    void young_sees_his_followee_hans_by_page() throws Exception {
+        mockMvc.perform(get("http://localhost:8080/v1/social/followees/1")
+                        .param("page", "0")
+                        .param("size", "10")
+                        .header("Authorization", authKeymap.get("young"))
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].username").value("hans"))
                 .andDo(result -> log.info(result.getResponse().getContentAsString()));
     }
 
     @Order(200)
-    @Test()
-    void hans_likes_young_jweet() throws Exception {
-        mockMvc.perform(post("http://localhost:8080/v1/jweet/1/like")
-                        .header("Authorization", authKeymap.get("hans")))
-                .andExpect(status().isOk());
-    }
-
-    @Order(201)
-    @Test()
-    void avery_sees_young_jweet_with_likes() throws Exception {
-        mockMvc.perform(get("http://localhost:8080/v1/jweet/1")
-                        .header("Authorization", authKeymap.get("avery"))
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.likes").value(1))
-                .andDo(result -> log.info(result.getResponse().getContentAsString()));
-    }
-
-    @Order(202)
-    @Test()
-    void avery_likes_not_existing_jweet() throws Exception {
-        mockMvc.perform(post("http://localhost:8080/v1/jweet/2/like")
-                        .header("Authorization", authKeymap.get("hans")))
-                .andExpect(status().isNotFound())
-                .andDo(result -> log.info(result.getResponse().getContentAsString()));
-    }
-
-    @Order(300)
     @Test
-    void young_edits_jweet() throws Exception {
-        String json = "{\"text\":\"Bonjour!\"}";
-        mockMvc.perform(put("http://localhost:8080/v1/jweet/1")
-                        .header("Authorization", authKeymap.get("young"))
-                        .content(json)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
-    }
-
-    @Order(301)
-    @Test()
-    void avery_sees_young_edited_jweet() throws Exception {
-        mockMvc.perform(get("http://localhost:8080/v1/jweet/1")
-                        .header("Authorization", authKeymap.get("avery"))
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.text").value("Bonjour!"))
-                .andDo(result -> log.info(result.getResponse().getContentAsString()));
-    }
-
-    @RepeatedTest(2)
-    @Order(302)
-    void avery_posts_two_comments_on_young_jweet() throws Exception {
-        String json = "{\"commenterId\":3,\"text\":\"Can we be friends?\"}";
-        mockMvc.perform(post("http://localhost:8080/v1/jweet/1/comment")
-                        .header("Authorization", authKeymap.get("avery"))
-                        .content(json)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
-    }
-
-
-    @Order(303)
-    @Test()
-    void young_sees_avery_comment() throws Exception {
-        mockMvc.perform(get("http://localhost:8080/v1/jweet/1/comment")
-                        .param("page", "0")
-                        .param("size", "5")
-                        .header("Authorization", authKeymap.get("young"))
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content[0].text").value("Can we be friends?"))
-                .andDo(result -> log.info(result.getResponse().getContentAsString()));
-    }
-
-    @Order(304)
-    @Test
-    void avery_deletes_one_comment() throws Exception {
-        mockMvc.perform(delete("http://localhost:8080/v1/jweet/1/comment/1")
+    void avery_follows_hans() throws Exception {
+        mockMvc.perform(post("http://localhost:8080/v1/social/follow")
+                        .param("followerId", "3")
+                        .param("followeeId", "2")
                         .header("Authorization", authKeymap.get("avery")))
                 .andExpect(status().isOk());
     }
 
-    @Order(305)
-    @Test()
-    void young_delets_jweet_hence_no_comments_left() throws Exception {
-        mockMvc.perform(delete("http://localhost:8080/v1/jweet/1")
-                        .header("Authorization", authKeymap.get("young")))
-                .andExpect(status().isOk());
+    @Order(201)
+    @Test
+    void avery_sees_no_followers() throws Exception {
+        mockMvc.perform(get("http://localhost:8080/v1/social/all_followers/3")
+                        .header("Authorization", authKeymap.get("avery"))
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(result -> assertEquals("[]", result.getResponse().getContentAsString()))
+                .andDo(result -> log.info(result.getResponse().getContentAsString()));
+    }
 
-        assertEquals(0, jweetCommentRepository.findAll().size());
+    @Order(202)
+    @Test
+    void hans_sees_his_followers_young_and_avery() throws Exception {
+        mockMvc.perform(get("http://localhost:8080/v1/social/all_followers/2")
+                        .header("Authorization", authKeymap.get("hans"))
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].username").value("avery"))
+                .andExpect(jsonPath("$[1].username").value("young"))
+                .andDo(result -> log.info(result.getResponse().getContentAsString()));
     }
 }

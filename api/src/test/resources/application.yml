@@ -18,6 +18,9 @@ spring:
         dialect: org.hibernate.dialect.H2Dialect
         format_sql: true
         show_sql: false
+        generate_statistics: true
+        stats:
+          factory: org.zerobase.jwitter.domain.stat.TransactionStatisticsFactory
   redis:
     host: localhost
     port: 6379
