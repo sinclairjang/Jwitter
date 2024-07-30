@@ -39,5 +39,4 @@ public class HomeTimelineCache {
         this.id = id;
         this.jweets = jweets;
     }
-
 }

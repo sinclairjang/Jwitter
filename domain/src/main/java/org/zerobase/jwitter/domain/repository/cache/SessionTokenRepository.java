@@ -12,4 +12,16 @@ import java.util.Optional;
 public interface SessionTokenRepository
         extends CrudRepository<SessionToken, String> {
     Optional<SessionToken> findByToken(String token);
+
+    default SessionToken refreshToken(String token) {
+        Optional<SessionToken> sessionToken = this.findByToken(token);
+        if (sessionToken.isEmpty()) {
+            throw new RuntimeException(
+                    String.format("Session token:%s doesn't exist.", token)
+            );
+        }
+        SessionToken newSessionToken = SessionToken.copyOf(sessionToken.get());
+        this.delete(sessionToken.get());
+        return this.save(newSessionToken);
+    }
 }

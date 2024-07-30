@@ -38,7 +38,7 @@ public class Jweet {
     @Size(max = 280)
     private String text;
 
-    private Long likes = 0L;
+    private Integer likes = 0;
 
     @Column(updatable = false)
     private Long createdAt; // unix time

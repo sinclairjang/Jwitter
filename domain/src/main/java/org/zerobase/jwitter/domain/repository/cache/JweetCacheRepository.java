@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.repository.Repository;
-import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.zerobase.jwitter.domain.model.cache.JweetCache;
 import org.springframework.lang.NonNull;
@@ -23,24 +22,18 @@ public class JweetCacheRepository implements Repository<JweetCache, String> {
 
     @Transactional
     public void save(@NonNull JweetCache jweet) {
-        try {
-            Boolean nullCheck =
-                redisHash().putIfAbsent(jweet.getId(), "author_id", jweet.getAuthorId()) ||
-                redisHash().putIfAbsent(jweet.getId(), "text", jweet.getText()) ||
-                redisHash().putIfAbsent(jweet.getId(), "likes", jweet.getLikes()) ||
-                redisHash().putIfAbsent(jweet.getId(), "created_at", jweet.getCreatedAt());
-            Objects.requireNonNull(nullCheck);
-        } catch (NullPointerException e) {
-            throw new RuntimeException(
-                    "NullPointerException occured. Possibly due to transaction/pipeline"
-            );
-        }
+            redisHash().put(jweet.getId(), "author_id", jweet.getAuthorId());
+            redisHash().put(jweet.getId(), "text", jweet.getText());
+            redisHash().put(jweet.getId(), "likes", jweet.getLikes());
+            redisHash().put(jweet.getId(), "created_at", jweet.getCreatedAt());
     }
 
+    @Transactional
     public void updateText(@NonNull JweetCache jweet) {
         redisHash().put(jweet.getId(), "text", jweet.getText());
     }
 
+    @Transactional
     public void updateLikes(@NonNull JweetCache jweet) {
         redisHash().put(jweet.getId(), "likes", jweet.getLikes());
     }
@@ -85,7 +78,6 @@ public class JweetCacheRepository implements Repository<JweetCache, String> {
         return true;
     }
 
-    @Transactional
     public Iterable<Optional<JweetCache>> findAllById(@NonNull Iterable<String> ids) {
         Set<Optional<JweetCache>> jweets = new HashSet<>();
         ids.forEach(id -> {
@@ -126,6 +118,7 @@ public class JweetCacheRepository implements Repository<JweetCache, String> {
         }
     }
 
+    @Transactional
     public void deleteById(@NonNull String id) {
         if (!id.startsWith(prefix))
             id = prefix + id;
@@ -141,6 +134,7 @@ public class JweetCacheRepository implements Repository<JweetCache, String> {
         }
     }
 
+    @Transactional
     public void deleteAllById(@NonNull Iterable<? extends String> strings) {
         try {
             Collection<String> keys = new HashSet<>();
@@ -154,6 +148,7 @@ public class JweetCacheRepository implements Repository<JweetCache, String> {
         }
     }
 
+    @Transactional
     public void deleteAll() {
         try {
             Set<String> keys = template.keys(prefix + "*");

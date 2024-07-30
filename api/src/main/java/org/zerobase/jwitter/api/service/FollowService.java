@@ -18,8 +18,8 @@ public class FollowService {
     private final FollowRepository followRepository;
 
     @org.zerobase.jwitter.domain.aop.validation.Follow
-    public void follow(Long followerId, Long followeeid) {
-        Follow follow = new Follow(new User(followerId), new User(followeeid));
+    public void follow(Long followerId, Long followeeId) {
+        Follow follow = new Follow(new User(followerId), new User(followeeId));
         followRepository.save(follow);
     }
 
@@ -41,5 +41,10 @@ public class FollowService {
     public Iterable<User> getFollowers(Long userId, Pageable page) {
         Page<Follow> followers = followRepository.findByfollowee(new User(userId), page);
         return followers.stream().map(Follow::getFollower).collect(Collectors.toSet());
+    }
+
+    public void unfollow(Long followerId, Long followeeId) {
+        Follow follow = new Follow(new User(followerId), new User(followeeId));
+        followRepository.delete(follow);
     }
 }

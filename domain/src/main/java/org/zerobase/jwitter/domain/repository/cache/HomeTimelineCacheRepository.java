@@ -2,12 +2,12 @@ package org.zerobase.jwitter.domain.repository.cache;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.data.repository.Repository;
 import org.springframework.lang.NonNull;
-import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.zerobase.jwitter.domain.model.cache.HomeTimelineCache;
 import org.zerobase.jwitter.domain.model.cache.JweetCache;
@@ -67,8 +67,8 @@ public class HomeTimelineCacheRepository implements Repository<HomeTimelineCache
                     try {
                         Objects.requireNonNull(
                                 redisZSets().add(homeTimeline.getId(), jweet.getId(),
-                                        Double.parseDouble(jweet.getCreatedAt())
-                                                + (weight * Double.parseDouble(jweet.getLikes()))));
+                                        Double.parseDouble(jweet.getCreatedAt()) +
+                                                (weight * Double.parseDouble(jweet.getLikes()))));
                     } catch (NullPointerException e) {
                         throw new RuntimeException(
                                 "NullPointerException occured. Possibly due to transaction/pipeline"
@@ -78,12 +78,12 @@ public class HomeTimelineCacheRepository implements Repository<HomeTimelineCache
         );
     }
 
-    public Optional<HomeTimelineCache> getHomeTimeline(@NonNull String id,
-                                                       @NonNull Pageable page) {
+    public PageImpl<JweetCache> getHomeTimeline(@NonNull String id,
+                                            @NonNull Pageable page) {
         if (!id.startsWith(prefix))
             id = prefix + id;
 
-        if (existsById(id))
+        if (!existsById(id))
             throw new RuntimeException(
                     String.format("%s doesn't exist.", id)
             );
@@ -93,7 +93,7 @@ public class HomeTimelineCacheRepository implements Repository<HomeTimelineCache
 
         try {
             if (Objects.requireNonNull(jweetIds).isEmpty()) {
-                return Optional.empty();
+                return new PageImpl<>(List.of());
             }
         } catch (NullPointerException e) {
             throw new RuntimeException(
@@ -105,7 +105,9 @@ public class HomeTimelineCacheRepository implements Repository<HomeTimelineCache
         jweetCacheRepository.findAllById(jweetIds).forEach(jweet -> {
             jweet.ifPresent(jweets::add);
         });
-        return Optional.of(new HomeTimelineCache(id, jweets));
+        PageImpl<JweetCache> pageResponse =
+                new PageImpl<>(jweets.stream().toList(), page, size(id));
+        return pageResponse;
     }
 
     public boolean existsById(@NonNull String id) {
@@ -156,6 +158,7 @@ public class HomeTimelineCacheRepository implements Repository<HomeTimelineCache
         }
     }
 
+    @Transactional
     public void deleteById(@NonNull String id) {
         if (!id.startsWith(prefix))
             id = prefix + id;
@@ -170,6 +173,7 @@ public class HomeTimelineCacheRepository implements Repository<HomeTimelineCache
         }
     }
 
+    @Transactional
     public void deleteAllById(@NonNull Iterable<? extends String> strings) {
         try {
             Collection<String> keys = new HashSet<>();
@@ -183,6 +187,7 @@ public class HomeTimelineCacheRepository implements Repository<HomeTimelineCache
         }
     }
 
+    @Transactional
     public void deleteAll() {
         try {
             Set<String> keys = template.keys(prefix + "*");

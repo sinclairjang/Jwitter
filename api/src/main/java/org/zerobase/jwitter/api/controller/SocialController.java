@@ -58,4 +58,14 @@ public class SocialController {
         followService.follow(followerId, followeeId);
         return ResponseEntity.ok().build();
     }
+
+    @Follow
+    @PreAuthorize("@sessionOwnerPermission.hasPermission(authentication, #followerId, '')")
+    @PostMapping("/unfollow")
+    public ResponseEntity<?> unfollow( @RequestParam(required = true) Long followerId,
+                                       @RequestParam(required = true) Long followeeId) {
+
+        followService.unfollow(followerId, followeeId);
+        return ResponseEntity.ok().build();
+    }
 }
