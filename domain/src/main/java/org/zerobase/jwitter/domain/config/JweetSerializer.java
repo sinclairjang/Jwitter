@@ -9,12 +9,14 @@ import org.zerobase.jwitter.domain.model.Jweet;
 import java.io.IOException;
 
 @JsonComponent
-public class JweetCommentsSerializer extends JsonSerializer<Jweet> {
+public class JweetSerializer extends JsonSerializer<Jweet> {
 
     @Override
     public void serialize(Jweet value, JsonGenerator gen,
                           SerializerProvider serializers) throws IOException {
         gen.writeStartObject();
+        gen.writeFieldName("id");
+        gen.writeNumber(value.getId());
         gen.writeFieldName("authorId");
         gen.writeNumber(value.getAuthorId());
         gen.writeFieldName("text");
@@ -26,7 +28,6 @@ public class JweetCommentsSerializer extends JsonSerializer<Jweet> {
         gen.writeFieldName("jweetComments");
         gen.writeString(getUrl(value));
         gen.writeEndObject();
-        gen.close();
     }
 
     private String getUrl(Jweet jweet) {

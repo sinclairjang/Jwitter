@@ -20,4 +20,8 @@ spring:
     port: 6379
     session:
       prefix: session_token
-      ttl: 1800
+    ttl: 1800
+    score: 200
+    cache-duration: 15
+  timeline:
+    buffer-size: 5

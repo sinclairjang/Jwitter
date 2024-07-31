@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import javax.validation.constraints.Size;
+import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -18,11 +19,11 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@JsonIgnoreProperties(value = {"id", "author", "jweetComments"}, allowSetters = true)
+@JsonIgnoreProperties(value = {"author", "jweetComments"}, allowSetters = true)
 @Data
 @Entity
 @Table(name = "JWEETS")
-public class Jweet {
+public class Jweet implements Serializable {
     @EqualsAndHashCode.Include
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

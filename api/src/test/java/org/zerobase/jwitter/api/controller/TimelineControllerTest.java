@@ -133,8 +133,8 @@ class TimelineControllerTest {
                 .andExpect(status().isOk());
     }
 
-    @RepeatedTest(3)
     @Order(Integer.MIN_VALUE + 1)
+    @RepeatedTest(3)
     void hans_posts_three_jweets() throws Exception {
         String json = "{\"authorId\":2, \"text\":\"Y'all! I'm Hans.\"}";
         mockMvc.perform(post("http://localhost:8080/v1/jweet")
@@ -185,6 +185,7 @@ class TimelineControllerTest {
     @Order(201)
     @Test
     void hans_posts_another_jweet() throws Exception {
+        Thread.sleep(1000);
         String json = "{\"authorId\":2, \"text\":\"Can you hear me?\"}";
         mockMvc.perform(post("http://localhost:8080/v1/jweet")
                         .header("Authorization", authKeymap.get("hans"))
@@ -217,6 +218,36 @@ class TimelineControllerTest {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content[0].id").value("jweet:4"))
+                .andExpect(jsonPath("$.content[1]").exists())
+                .andExpect(jsonPath("$.content[2]").exists())
+                .andExpect(jsonPath("$.content[3]").exists())
+                .andDo(result -> log.info(result.getResponse().getContentAsString()));
+    }
+
+    @Order(203)
+    @Test
+    void avery_can_see_new_jweet_on_hans_timeline_in_desc_order() throws Exception {
+        mockMvc.perform(get("http://localhost:8080/v1/user_timeline/2")
+                        .param("cursor", "0")
+                        .header("Authorization", authKeymap.get("avery"))
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].id").value(4))
+                .andExpect(jsonPath("$.content[1]").exists())
+                .andExpect(jsonPath("$.content[2]").exists())
+                .andExpect(jsonPath("$.content[3]").exists())
+                .andDo(result -> log.info(result.getResponse().getContentAsString()));
+    }
+
+    @Order(204)
+    @Test
+    void avery_reads_cached_results_above() throws Exception {
+        mockMvc.perform(get("http://localhost:8080/v1/user_timeline/2")
+                        .param("cursor", "0")
+                        .header("Authorization", authKeymap.get("avery"))
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].id").value(4))
                 .andExpect(jsonPath("$.content[1]").exists())
                 .andExpect(jsonPath("$.content[2]").exists())
                 .andExpect(jsonPath("$.content[3]").exists())
