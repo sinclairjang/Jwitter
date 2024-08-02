@@ -7,12 +7,14 @@ import javax.servlet.http.HttpServletResponse;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.zerobase.jwitter.api.aop.exception.TokenTypeException;
 import org.zerobase.jwitter.domain.model.cache.SessionToken;
 import org.zerobase.jwitter.domain.repository.cache.SessionTokenRepository;
 
@@ -35,8 +37,18 @@ public class TokenFilter extends OncePerRequestFilter {
         if (token == null || token.isEmpty()) {
             filterChain.doFilter(request, response);
         } else {
+            String tokenType = token.split(" ")[0];
+            if (!tokenType.equals("Bearer")) {
+                throw new TokenTypeException(
+                        HttpStatus.BAD_REQUEST,
+                        String.format("{%s} is not required Bearer type",
+                                tokenType)
+                );
+            }
+
+            String content = token.split(" ")[1];
             Optional<SessionToken> sessionToken =
-                    sessionTokenRepository.findByToken(token);
+                    sessionTokenRepository.findByToken(content);
             if (sessionToken.isEmpty()) {
                 filterChain.doFilter(request, response);
             } else {
@@ -50,7 +62,7 @@ public class TokenFilter extends OncePerRequestFilter {
                                         .collect(Collectors.toList())
                         );
                 SecurityContextHolder.getContext().setAuthentication(authentication);
-                sessionTokenRepository.refreshToken(token);
+                sessionTokenRepository.refreshToken(content);
                 filterChain.doFilter(request, response);
             }
         }
