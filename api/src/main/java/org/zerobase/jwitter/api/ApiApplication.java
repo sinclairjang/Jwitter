@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.data.redis.core.RedisKeyValueAdapter;
 import org.springframework.data.redis.repository.configuration.EnableRedisRepositories;
 
+
 @EnableJpaAuditing
 @EnableJpaRepositories(basePackages = {"org.zerobase.jwitter.domain"})
 @EnableRedisRepositories(basePackages = {"org.zerobase.jwitter.domain.repository.cache"},

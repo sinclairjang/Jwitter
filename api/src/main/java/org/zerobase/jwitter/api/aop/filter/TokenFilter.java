@@ -7,7 +7,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -40,7 +39,6 @@ public class TokenFilter extends OncePerRequestFilter {
             String tokenType = token.split(" ")[0];
             if (!tokenType.equals("Bearer")) {
                 throw new TokenTypeException(
-                        HttpStatus.BAD_REQUEST,
                         String.format("{%s} is not required Bearer type",
                                 tokenType)
                 );

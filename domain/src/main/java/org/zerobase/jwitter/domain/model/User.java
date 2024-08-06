@@ -33,7 +33,7 @@ public class User {
     private String username;
 
     @NotNull
-    @Email
+    @Email(regexp = ".*@.*\\..*")
     @EqualsAndHashCode.Include
     @ToString.Include
     private String email;

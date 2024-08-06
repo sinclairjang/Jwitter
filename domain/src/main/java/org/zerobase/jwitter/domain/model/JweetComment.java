@@ -28,17 +28,21 @@ public class JweetComment {
     @Column(name = "commenter_id")
     private Long commenterId;
 
+    @NotNull
     @Size(max = 280)
     private String text;
 
+    @NotNull
     private Long likes = 0L;
 
+    @NotNull
     private Long createdAt; // unix time
 
     @ManyToOne(targetEntity = Jweet.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "jweet_id", insertable = false, updatable = false)
     private Jweet jweet;
 
+    @NotNull
     @Column(name = "jweet_id")
     private Long jweetId;
 

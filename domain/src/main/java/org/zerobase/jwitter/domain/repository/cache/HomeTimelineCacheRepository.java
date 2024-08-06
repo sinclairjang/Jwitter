@@ -7,11 +7,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.data.repository.Repository;
-import org.springframework.lang.NonNull;
-import org.springframework.transaction.annotation.Transactional;
 import org.zerobase.jwitter.domain.model.cache.HomeTimelineCache;
 import org.zerobase.jwitter.domain.model.cache.JweetCache;
 
+import javax.validation.constraints.NotNull;
 import java.util.*;
 
 import static org.zerobase.jwitter.domain.model.cache.HomeTimelineCache.prefix;
@@ -29,37 +28,31 @@ public class HomeTimelineCacheRepository implements Repository<HomeTimelineCache
         return template.opsForZSet();
     }
 
-    @Transactional
-    public <S extends HomeTimelineCache> void save(@NonNull S homeTimeline) {
+    public <S extends HomeTimelineCache> void save(@NotNull S homeTimeline) {
         homeTimeline.getJweets().forEach(
                 jweet -> {
                     jweetCacheRepository.save(jweet);
-
                     try {
                         if (Objects.requireNonNull(
-                                redisZSets().zCard(homeTimeline.getId())).compareTo(800L) > 0) {
-                            throw new RuntimeException(
-                                    "Home timeline capacity 800 has exceeded.");
+                                redisZSets().zCard(homeTimeline.getId())).compareTo(800L) >= 0) {
+                            redisZSets().removeRange(homeTimeline.getId(), 0, 1);
                         }
                     } catch (NullPointerException e) {
                         throw new RuntimeException(
                                 "NullPointerException occured. Possibly due to transaction/pipeline"
                         );
                     }
-
-                    redisZSets().addIfAbsent(homeTimeline.getId(),
+                    redisZSets().add(homeTimeline.getId(),
                             jweet.getId(), Double.parseDouble(jweet.getCreatedAt()));
                 }
         );
     }
 
-    @Transactional
-    public <S extends HomeTimelineCache> void updateText(@NonNull S homeTimeline) {
+    public <S extends HomeTimelineCache> void updateText(@NotNull S homeTimeline) {
         homeTimeline.getJweets().forEach(jweetCacheRepository::updateText);
     }
 
-    @Transactional
-    public <S extends HomeTimelineCache> void updateLikes(@NonNull S homeTimeline) {
+    public <S extends HomeTimelineCache> void updateLikes(@NotNull S homeTimeline) {
         homeTimeline.getJweets().forEach(
                 jweet -> {
                     jweetCacheRepository.updateLikes(jweet);
@@ -78,8 +71,8 @@ public class HomeTimelineCacheRepository implements Repository<HomeTimelineCache
         );
     }
 
-    public PageImpl<JweetCache> getHomeTimeline(@NonNull String id,
-                                            @NonNull Pageable page) {
+    public PageImpl<JweetCache> getHomeTimeline(@NotNull String id,
+                                            @NotNull Pageable page) {
         if (!id.startsWith(prefix))
             id = prefix + id;
 
@@ -105,12 +98,10 @@ public class HomeTimelineCacheRepository implements Repository<HomeTimelineCache
         jweetCacheRepository.findAllById(jweetIds).forEach(jweet -> {
             jweet.ifPresent(jweets::add);
         });
-        PageImpl<JweetCache> pageResponse =
-                new PageImpl<>(jweets.stream().toList(), page, size(id));
-        return pageResponse;
+        return new PageImpl<>(jweets.stream().toList(), page, size(id));
     }
 
-    public boolean existsById(@NonNull String id) {
+    public boolean existsById(@NotNull String id) {
         if (!id.startsWith(prefix))
             id = prefix + id;
 
@@ -127,7 +118,7 @@ public class HomeTimelineCacheRepository implements Repository<HomeTimelineCache
         return true;
     }
 
-    public Long size(@NonNull String id) {
+    public Long size(@NotNull String id) {
         if (!id.startsWith(prefix))
             id = prefix + id;
 
@@ -158,8 +149,7 @@ public class HomeTimelineCacheRepository implements Repository<HomeTimelineCache
         }
     }
 
-    @Transactional
-    public void deleteById(@NonNull String id) {
+    public void deleteById(@NotNull String id) {
         if (!id.startsWith(prefix))
             id = prefix + id;
 
@@ -173,8 +163,7 @@ public class HomeTimelineCacheRepository implements Repository<HomeTimelineCache
         }
     }
 
-    @Transactional
-    public void deleteAllById(@NonNull Iterable<? extends String> strings) {
+    public void deleteAllById(@NotNull Iterable<? extends String> strings) {
         try {
             Collection<String> keys = new HashSet<>();
             strings.forEach(keys::add);
@@ -187,7 +176,6 @@ public class HomeTimelineCacheRepository implements Repository<HomeTimelineCache
         }
     }
 
-    @Transactional
     public void deleteAll() {
         try {
             Set<String> keys = template.keys(prefix + "*");

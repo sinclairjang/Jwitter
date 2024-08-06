@@ -3,7 +3,6 @@ package org.zerobase.jwitter.api.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.zerobase.jwitter.api.aop.exception.JweetCommentNotFoundException;
@@ -31,14 +30,13 @@ public class JweetCRUDService {
 
     public Jweet readJweet(Long id) {
         return jweetRepository.findById(id).orElseThrow(
-                () -> new JweetNotFoundException(HttpStatus.NOT_FOUND,
+                () -> new JweetNotFoundException(
                         String.format("Jweet:%d does not exist.", id)
                 )
         );
     }
 
-    @Transactional
-    public void postJweet(Jweet jweet) {
+    public Jweet postJweet(Jweet jweet) {
         Jweet persistentJweet = jweetRepository.save(jweet);
         Iterable<User> followers = followService.getFollowers(persistentJweet.getAuthorId());
         followers.forEach(follower -> {
@@ -49,19 +47,20 @@ public class JweetCRUDService {
                     )
             );
         });
+        return persistentJweet;
     }
 
     @Transactional
-    public void editJweet(Long jweetId, Jweet jweet) {
+    public Jweet editJweet(Long jweetId, String text) {
         Jweet persistentJweet = jweetRepository.findById(jweetId).orElseThrow(
-                () -> new JweetNotFoundException(HttpStatus.NOT_FOUND,
+                () -> new JweetNotFoundException(
                         String.format("Jweet:%d does not exist.", jweetId)
                 )
         );
+
         Iterable<User> followers = followService.getFollowers(persistentJweet.getAuthorId());
-        if (!persistentJweet.getText().equals(jweet.getText())) {
-            persistentJweet.setText(jweet.getText());
-            persistentJweet.setLikes(jweet.getLikes());
+        if (!persistentJweet.getText().equals(text)) {
+            persistentJweet.setText(text);
             followers.forEach(follower -> {
                 homeTimelineCacheRepository.updateText(
                         new HomeTimelineCache(
@@ -71,24 +70,15 @@ public class JweetCRUDService {
                 );
             });
         }
-        if (!persistentJweet.getLikes().equals(jweet.getLikes())) {
-            persistentJweet.setLikes(jweet.getLikes());
-            followers.forEach(follower -> {
-                homeTimelineCacheRepository.updateLikes(
-                        new HomeTimelineCache(
-                                String.valueOf(follower.getId()),
-                                Set.of(JweetCache.from(persistentJweet))
-                        )
-                );
-            });
-        }
+
         jweetRepository.save(persistentJweet);
+        return  persistentJweet;
     }
 
     @Transactional
     public void deleteJweet(Long id) {
         Jweet persistentJweet = jweetRepository.findById(id).orElseThrow(
-                () -> new JweetNotFoundException(HttpStatus.NOT_FOUND,
+                () -> new JweetNotFoundException(
                         String.format("Jweet:%d does not exist.", id)
                 )
         );
@@ -101,9 +91,9 @@ public class JweetCRUDService {
     }
 
     @Transactional
-    public void likeJweet(Long id) {
+    public Jweet likeJweet(Long id) {
         Jweet persistentJweet = jweetRepository.findById(id).orElseThrow(
-                () -> new JweetNotFoundException(HttpStatus.NOT_FOUND,
+                () -> new JweetNotFoundException(
                         String.format("Jweet:%d does not exist.", id)
                 )
         );
@@ -117,13 +107,13 @@ public class JweetCRUDService {
                     )
             );
         });
-        jweetRepository.save(persistentJweet);
+        return jweetRepository.save(persistentJweet);
     }
 
-    public Page<JweetComment> readJweetComment(Long jweetId,
-                                                   Pageable page) {
+    public Page<JweetComment> readJweetComments(Long jweetId,
+                                                Pageable page) {
         jweetRepository.findById(jweetId).orElseThrow(
-                () -> new JweetNotFoundException(HttpStatus.NOT_FOUND,
+                () -> new JweetNotFoundException(
                         String.format("Jweet:%d does not exist.", jweetId)
                 )
         );
@@ -131,38 +121,44 @@ public class JweetCRUDService {
     }
 
     @Transactional
-    public void postJweetComment(Long jweetId, JweetComment comment) {
+    public JweetComment postJweetComment(Long jweetId, JweetComment comment) {
         Jweet persistentJweet =
                 jweetRepository.findById(jweetId).orElseThrow(
-                        () -> new JweetNotFoundException(HttpStatus.NOT_FOUND,
+                        () -> new JweetNotFoundException(
                                 String.format("Jweet:%d does not exist.", jweetId)
                         )
                 );
         persistentJweet.addJweetComments(comment);
+        return jweetCommentRepository.findById(comment.getId()).orElseThrow(
+                () -> new JweetCommentNotFoundException(
+                        String.format("Jweet comment:%d does not exist.", jweetId)
+                )
+        );
     }
 
     @Transactional
-    public void editJweetComment(Long jweetId,
+    public JweetComment editJweetComment(Long jweetId,
                                  Long commentId,
-                                 JweetComment jweetComment) {
+                                 String text) {
         jweetRepository.findById(jweetId).orElseThrow(
-                () -> new JweetNotFoundException(HttpStatus.NOT_FOUND,
+                () -> new JweetNotFoundException(
                         String.format("Jweet:%d does not exist.", jweetId)
                 )
         );
        JweetComment persistentComment =
                jweetCommentRepository.findById(commentId).orElseThrow(
-               () -> new JweetCommentNotFoundException(HttpStatus.NOT_FOUND,
+               () -> new JweetCommentNotFoundException(
                        String.format("Jweet comment:%d doesn't exist.", commentId)
                )
        );
-        persistentComment.setText(jweetComment.getText());
+        persistentComment.setText(text);
+        return persistentComment;
     }
 
     @Transactional
     public void deleteJweetComment(Long jweetId, Long commentId) {
         jweetRepository.findById(jweetId).orElseThrow(
-                () -> new JweetNotFoundException(HttpStatus.NOT_FOUND,
+                () -> new JweetNotFoundException(
                         String.format("Jweet:%d does not exist.", jweetId)
                 )
         );

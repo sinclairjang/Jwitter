@@ -6,7 +6,8 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.repository.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import org.zerobase.jwitter.domain.model.cache.JweetCache;
-import org.springframework.lang.NonNull;
+
+import javax.validation.constraints.NotNull;
 import java.util.*;
 
 import static org.zerobase.jwitter.domain.model.cache.JweetCache.prefix;
@@ -21,7 +22,7 @@ public class JweetCacheRepository implements Repository<JweetCache, String> {
     }
 
     @Transactional
-    public void save(@NonNull JweetCache jweet) {
+    public void save(@NotNull JweetCache jweet) {
             redisHash().put(jweet.getId(), "author_id", jweet.getAuthorId());
             redisHash().put(jweet.getId(), "text", jweet.getText());
             redisHash().put(jweet.getId(), "likes", jweet.getLikes());
@@ -29,17 +30,17 @@ public class JweetCacheRepository implements Repository<JweetCache, String> {
     }
 
     @Transactional
-    public void updateText(@NonNull JweetCache jweet) {
+    public void updateText(@NotNull JweetCache jweet) {
         redisHash().put(jweet.getId(), "text", jweet.getText());
     }
 
     @Transactional
-    public void updateLikes(@NonNull JweetCache jweet) {
+    public void updateLikes(@NotNull JweetCache jweet) {
         redisHash().put(jweet.getId(), "likes", jweet.getLikes());
     }
 
 
-    public Optional<JweetCache> findById(@NonNull String id) {
+    public Optional<JweetCache> findById(@NotNull String id) {
         if (!id.startsWith(prefix))
             id = prefix + id;
 
@@ -63,7 +64,7 @@ public class JweetCacheRepository implements Repository<JweetCache, String> {
         }
     }
 
-    public boolean existsById(@NonNull String id) {
+    public boolean existsById(@NotNull String id) {
         if (!id.startsWith(prefix))
             id = prefix + id;
         try {
@@ -78,7 +79,7 @@ public class JweetCacheRepository implements Repository<JweetCache, String> {
         return true;
     }
 
-    public Iterable<Optional<JweetCache>> findAllById(@NonNull Iterable<String> ids) {
+    public Iterable<Optional<JweetCache>> findAllById(@NotNull Iterable<String> ids) {
         Set<Optional<JweetCache>> jweets = new HashSet<>();
         ids.forEach(id -> {
             jweets.add(findById(id));
@@ -86,7 +87,7 @@ public class JweetCacheRepository implements Repository<JweetCache, String> {
         return jweets;
     }
 
-    public Long size(@NonNull String id) {
+    public Long size(@NotNull String id) {
         if (!id.startsWith(prefix))
             id = prefix + id;
 
@@ -118,8 +119,7 @@ public class JweetCacheRepository implements Repository<JweetCache, String> {
         }
     }
 
-    @Transactional
-    public void deleteById(@NonNull String id) {
+    public void deleteById(@NotNull String id) {
         if (!id.startsWith(prefix))
             id = prefix + id;
 
@@ -134,8 +134,7 @@ public class JweetCacheRepository implements Repository<JweetCache, String> {
         }
     }
 
-    @Transactional
-    public void deleteAllById(@NonNull Iterable<? extends String> strings) {
+    public void deleteAllById(@NotNull Iterable<? extends String> strings) {
         try {
             Collection<String> keys = new HashSet<>();
             strings.forEach(keys::add);
@@ -148,7 +147,6 @@ public class JweetCacheRepository implements Repository<JweetCache, String> {
         }
     }
 
-    @Transactional
     public void deleteAll() {
         try {
             Set<String> keys = template.keys(prefix + "*");
