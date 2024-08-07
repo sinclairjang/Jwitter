@@ -1,7 +1,10 @@
 package org.zerobase.jwitter.api.controller;
 
+import io.swagger.annotations.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -11,8 +14,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import org.zerobase.jwitter.api.security.dto.UserDto;
+import org.zerobase.jwitter.api.aop.exception.SessionTokenNotFoundException;
+import org.zerobase.jwitter.api.aop.exception.UserAlreadyExistsException;
+import org.zerobase.jwitter.api.dto.JweetDto;
+import org.zerobase.jwitter.api.dto.UserDto;
 import org.zerobase.jwitter.domain.model.Role;
 import org.zerobase.jwitter.domain.model.cache.SessionToken;
 import org.zerobase.jwitter.domain.model.User;
@@ -24,6 +31,7 @@ import java.security.SecureRandom;
 import java.util.Base64;
 import java.util.stream.Collectors;
 
+@Api(tags = {"User Login APIs"})
 @Validated
 @RequiredArgsConstructor
 @RestController
@@ -35,24 +43,45 @@ public class LoginController {
     private final UserRepository userRepository;
     private final SessionTokenRepository sessionTokenRepository;
     private final PasswordEncoder passwordEncoder;
+
+    @ApiOperation("Login")
+    @ApiResponses(
+            {
+                    @ApiResponse(
+                            code = 200,
+                            message = "Login complete",
+                            response = JweetDto.Out.class),
+                    @ApiResponse(
+                            code = 400,
+                            message = "Invalid request"
+                    ),
+                    @ApiResponse(
+                            code = 500,
+                            message = "Internal server error"
+                    )
+            }
+    )
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody UserDto loginRequest) {
+    public ResponseEntity<UserDto.Out> login(
+            @RequestBody
+            @ApiParam(name = "Json", value = "Login request", required = true)
+            UserDto.LIn userDto) {
         Authentication authenticationRequest =
                 new UsernamePasswordAuthenticationToken(
-                        loginRequest.getUsername(), loginRequest.getPassword());
+                        userDto.getUsername(), userDto.getPassword());
         Authentication authenticationResponse =
                 this.authenticationManager.authenticate(authenticationRequest);
 
         String sessionToken = generateNewToken();
-        User user = userRepository.findByUsername(loginRequest.getUsername())
+        User user = userRepository.findByUsername(userDto.getUsername())
                 .orElseThrow(() -> new UsernameNotFoundException(
                         String.format("User %s doesn't exist.",
-                                loginRequest.getUsername())
+                                userDto.getUsername())
                 ));
 
         SessionToken refresh =
                 sessionTokenRepository.findById(String.valueOf(user.getId()))
-                        .orElseThrow(() -> new RuntimeException(
+                        .orElseThrow(() -> new SessionTokenNotFoundException(
                                 String.format(
                                         "Session Token %d doesn't exist.",
                                         user.getId()
@@ -60,16 +89,40 @@ public class LoginController {
         refresh.setToken(sessionToken);
         sessionTokenRepository.save(refresh);
 
-        return ResponseEntity.ok()
+        return ResponseEntity
+                .status(HttpStatus.ACCEPTED)
+                .contentType(MediaType.APPLICATION_JSON)
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + sessionToken)
                 .header(HttpHeaders.ACCESS_CONTROL_EXPOSE_HEADERS, "Authorization")
-                .build();
+                .body(UserDto.Out.from(user));
     }
 
+    @ApiOperation("Signup")
+    @ApiResponses(
+            {
+                    @ApiResponse(
+                            code = 201,
+                            message = "Signup complete",
+                            response = JweetDto.Out.class),
+                    @ApiResponse(
+                            code = 400,
+                            message = "Invalid request"
+                    ),
+                    @ApiResponse(
+                            code = 500,
+                            message = "Internal server error"
+                    )
+            }
+    )
     @PostMapping("/signup")
-    public ResponseEntity<?> signup(@RequestBody @Valid User user) {
+    @ResponseStatus(HttpStatus.CREATED)
+    public ResponseEntity<UserDto.Out> signup(
+            @RequestBody @Valid
+            @ApiParam(name = "Json", value = "Signup request", required = true)
+            UserDto.SIn userDto) {
+        User user = UserDto.SIn.toEntity(userDto);
         if (userRepository.existsByUsername(user.getUsername())) {
-            throw new RuntimeException(
+            throw new UserAlreadyExistsException(
                     String.format("User %s already exists.",
                             user.getUsername())
             );
@@ -88,10 +141,12 @@ public class LoginController {
                                 .collect(Collectors.toList()))
                         .build());
 
-        return ResponseEntity.ok()
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .contentType(MediaType.APPLICATION_JSON)
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + sessionToken)
                 .header(HttpHeaders.ACCESS_CONTROL_EXPOSE_HEADERS, "Authorization")
-                .build();
+                .body(UserDto.Out.from(user));
     }
 
     public static String generateNewToken() {

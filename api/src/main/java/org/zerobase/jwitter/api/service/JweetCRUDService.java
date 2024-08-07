@@ -72,7 +72,7 @@ public class JweetCRUDService {
         }
 
         jweetRepository.save(persistentJweet);
-        return  persistentJweet;
+        return persistentJweet;
     }
 
     @Transactional
@@ -138,19 +138,19 @@ public class JweetCRUDService {
 
     @Transactional
     public JweetComment editJweetComment(Long jweetId,
-                                 Long commentId,
-                                 String text) {
+                                         Long commentId,
+                                         String text) {
         jweetRepository.findById(jweetId).orElseThrow(
                 () -> new JweetNotFoundException(
                         String.format("Jweet:%d does not exist.", jweetId)
                 )
         );
-       JweetComment persistentComment =
-               jweetCommentRepository.findById(commentId).orElseThrow(
-               () -> new JweetCommentNotFoundException(
-                       String.format("Jweet comment:%d doesn't exist.", commentId)
-               )
-       );
+        JweetComment persistentComment =
+                jweetCommentRepository.findById(commentId).orElseThrow(
+                        () -> new JweetCommentNotFoundException(
+                                String.format("Jweet comment:%d doesn't exist.", commentId)
+                        )
+                );
         persistentComment.setText(text);
         return persistentComment;
     }
@@ -163,5 +163,22 @@ public class JweetCRUDService {
                 )
         );
         jweetCommentRepository.deleteById(commentId);
+    }
+
+    @Transactional
+    public JweetComment likeJweetComment(Long jweetId, Long commentId) {
+        jweetRepository.findById(jweetId).orElseThrow(
+                () -> new JweetNotFoundException(
+                        String.format("Jweet:%d does not exist.", jweetId)
+                )
+        );
+        JweetComment persistentComment =
+                jweetCommentRepository.findById(commentId).orElseThrow(
+                        () -> new JweetCommentNotFoundException(
+                                String.format("Jweet comment:%d doesn't exist.", commentId)
+                        )
+                );
+        persistentComment.setLikes(persistentComment.getLikes() + 1);
+        return persistentComment;
     }
 }

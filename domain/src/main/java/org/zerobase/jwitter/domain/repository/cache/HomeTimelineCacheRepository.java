@@ -2,11 +2,14 @@ package org.zerobase.jwitter.domain.repository.cache;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.data.repository.Repository;
+import org.zerobase.jwitter.domain.aop.validation.exception.RedisInvalidCommandException;
+import org.zerobase.jwitter.domain.aop.validation.exception.RedisKeyNotExistException;
 import org.zerobase.jwitter.domain.model.cache.HomeTimelineCache;
 import org.zerobase.jwitter.domain.model.cache.JweetCache;
 
@@ -71,13 +74,13 @@ public class HomeTimelineCacheRepository implements Repository<HomeTimelineCache
         );
     }
 
-    public PageImpl<JweetCache> getHomeTimeline(@NotNull String id,
+    public Page<JweetCache> getHomeTimeline(@NotNull String id,
                                             @NotNull Pageable page) {
         if (!id.startsWith(prefix))
             id = prefix + id;
 
         if (!existsById(id))
-            throw new RuntimeException(
+            throw new RedisKeyNotExistException(
                     String.format("%s doesn't exist.", id)
             );
 
@@ -89,7 +92,7 @@ public class HomeTimelineCacheRepository implements Repository<HomeTimelineCache
                 return new PageImpl<>(List.of());
             }
         } catch (NullPointerException e) {
-            throw new RuntimeException(
+            throw new RedisInvalidCommandException(
                     "NullPointerException occured. Possibly due to transaction/pipeline"
             );
         }

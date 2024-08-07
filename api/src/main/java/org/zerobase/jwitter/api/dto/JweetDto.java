@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.zerobase.jwitter.domain.model.Jweet;
+import org.zerobase.jwitter.domain.model.cache.JweetCache;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
@@ -24,11 +25,12 @@ public class JweetDto implements Serializable {
     @ApiModel("Jweet create request")
     public static class CIn {
         @NotNull
-        @ApiModelProperty(name = "Author Id", example = "1", required = true)
+        @ApiModelProperty(value = "Author Id", example = "13", required = true)
         private Long authorId;
 
+        @NotNull
         @Size(max = 280)
-        @ApiModelProperty(name = "Text", example = "Hello!", required = true)
+        @ApiModelProperty(value = "Text", example = "Hello!", required = true)
         private String text;
 
         public static Jweet toEntity(JweetDto.CIn jweetDto) {
@@ -46,8 +48,9 @@ public class JweetDto implements Serializable {
     @ApiModel("Jweet update request")
     public static class UIn {
 
+        @NotNull
         @Size(max = 280)
-        @ApiModelProperty(name = "Text", example = "Hello!", required = true)
+        @ApiModelProperty(value = "Text", example = "Hello!", required = true)
         private String text;
 
     }
@@ -58,22 +61,29 @@ public class JweetDto implements Serializable {
     @Data
     @ApiModel("Jweet CRU response")
     public static class Out {
-        @ApiModelProperty(name = "Jweet Id", example = "1", required = true)
+        @NotNull
+        @Min(1)
+        @ApiModelProperty(value = "Jweet Id", example = "1", required = true)
         private Long id;
 
-        @ApiModelProperty(name = "Author Id", example = "1", required = true)
+        @NotNull
+        @Min(1)
+        @ApiModelProperty(value = "Author Id", example = "13", required = true)
         private Long authorId;
 
+        @NotNull
         @Size(max = 280)
-        @ApiModelProperty(name = "Text", example = "Hello!", required = true)
+        @ApiModelProperty(value = "Text", example = "Hello!", required = true)
         private String text;
 
+        @NotNull
         @Min(0)
-        @ApiModelProperty(name = "Likes", example = "0", required = true)
+        @ApiModelProperty(value = "Likes", example = "10", required = true)
         private Long likes;
 
+        @NotNull
         @DateTimeFormat(pattern = "yyyy-MM-dd hh:mm:ss a")
-        @ApiModelProperty(name = "Created At", example = "2018-02-21 12:00:00 PM", required = true)
+        @ApiModelProperty(value = "Created At", example = "2018-02-21 12:00:00 PM", required = true)
         private String createdAt;
 
         public static JweetDto.Out fromEntity(Jweet jweet) {
@@ -84,6 +94,18 @@ public class JweetDto implements Serializable {
                     .authorId(jweet.getAuthorId())
                     .text(jweet.getText())
                     .likes(jweet.getLikes())
+                    .createdAt(df.format(date))
+                    .build();
+        }
+
+        public static JweetDto.Out fromEntity(JweetCache jweet) {
+            Date date = new Date(Long.parseLong(jweet.getCreatedAt()) * 1000L);
+            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss a");
+            return JweetDto.Out.builder()
+                    .id(Long.parseLong(jweet.getId().replace(JweetCache.prefix, "")))
+                    .authorId(Long.valueOf(jweet.getAuthorId()))
+                    .text(jweet.getText())
+                    .likes(Long.valueOf(jweet.getLikes()))
                     .createdAt(df.format(date))
                     .build();
         }

@@ -39,6 +39,7 @@ public class User {
     private String email;
 
     @NotNull
+    @Size(min = 8, max = 20)
     private String password;
 
     @Transient

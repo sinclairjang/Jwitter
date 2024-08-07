@@ -9,11 +9,17 @@ import org.springframework.stereotype.Repository;
 import org.zerobase.jwitter.domain.model.Follow;
 import org.zerobase.jwitter.domain.model.User;
 
+import java.util.Optional;
 import java.util.Set;
 
 @EnableJpaRepositories
 @Repository
 public interface FollowRepository extends JpaRepository<Follow, Long> {
+
+    @Query(value = "SELECT * FROM FOLLOWS WHERE FOLLOWER_ID = ?1 AND FOLLOWEE_ID = ?2",
+            nativeQuery = true)
+    Optional<Follow> findByIds(Long followerId, Long followeeId);
+
     Set<Follow> findByfollower(User follower);
 
     @Query(value = "SELECT * FROM FOLLOWS WHERE FOLLOWER_ID = ?1",

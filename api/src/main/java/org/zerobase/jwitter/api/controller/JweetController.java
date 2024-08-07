@@ -18,7 +18,6 @@ import org.zerobase.jwitter.domain.model.Jweet;
 import org.zerobase.jwitter.domain.model.JweetComment;
 
 import javax.validation.Valid;
-import java.text.ParseException;
 import java.util.List;
 
 @Api(tags = {"Jweet Crud APIs"})
@@ -32,12 +31,20 @@ public class JweetController {
     @ApiResponses(
             {
                     @ApiResponse(
+                            code = 200,
+                            message = "Jweet is read successfully",
+                            response = JweetDto.Out.class),
+                    @ApiResponse(
+                            code = 401,
+                            message = "Not authorized"
+                    ),
+                    @ApiResponse(
                             code = 404,
-                            message =  "Requested Jweet is not found"
+                            message = "Requested Jweet is not found"
                     ),
                     @ApiResponse(
                             code = 500,
-                            message =  "Internal server error"
+                            message = "Internal server error"
                     )
             }
     )
@@ -47,7 +54,7 @@ public class JweetController {
             @ApiParam(name = "id", value = "Jweet Id",
                     allowableValues = "range[1, infinity]",
                     example = "1", required = true)
-            Long id) throws ParseException {
+            Long id) {
         return ResponseEntity
                 .status(HttpStatus.ACCEPTED)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -63,11 +70,15 @@ public class JweetController {
                             response = JweetDto.Out.class),
                     @ApiResponse(
                             code = 400,
-                            message =  "Invalid request"
+                            message = "Invalid request"
+                    ),
+                    @ApiResponse(
+                            code = 401,
+                            message = "Not authorized"
                     ),
                     @ApiResponse(
                             code = 500,
-                            message =  "Internal server error"
+                            message = "Internal server error"
                     )
             }
     )
@@ -95,6 +106,10 @@ public class JweetController {
                     @ApiResponse(
                             code = 400,
                             message =  "Invalid request"
+                    ),
+                    @ApiResponse(
+                            code = 401,
+                            message = "Not authorized"
                     ),
                     @ApiResponse(
                             code = 500,
@@ -131,6 +146,10 @@ public class JweetController {
                             message =  "Invalid request"
                     ),
                     @ApiResponse(
+                            code = 401,
+                            message = "Not authorized"
+                    ),
+                    @ApiResponse(
                             code = 500,
                             message =  "Internal server error"
                     )
@@ -164,6 +183,10 @@ public class JweetController {
                             message =  "Invalid request"
                     ),
                     @ApiResponse(
+                            code = 401,
+                            message = "Not authorized"
+                    ),
+                    @ApiResponse(
                             code = 500,
                             message =  "Internal server error"
                     )
@@ -171,7 +194,7 @@ public class JweetController {
     )
     @ApiOperation("Add one like to selected Jweet")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
-    @PostMapping("{id}/like")
+    @PostMapping("/{id}/like")
     public ResponseEntity<JweetDto.Out> likeJweet(
             @PathVariable
             @ApiParam(name = "id", value = "Jweet Id",
@@ -196,6 +219,10 @@ public class JweetController {
                             message =  "Invalid request"
                     ),
                     @ApiResponse(
+                            code = 401,
+                            message = "Not authorized"
+                    ),
+                    @ApiResponse(
                             code = 500,
                             message =  "Internal server error"
                     )
@@ -207,7 +234,7 @@ public class JweetController {
     public ResponseEntity<JweetCommentPageDto> readJweetComments(
             @ApiParam(name = "id", value = "Jweet Id",
                     allowableValues = "range[1, infinity]",
-                    example = "1", required = true)
+                    example = "23", required = true)
             @PathVariable Long id,
             @ApiParam(name = "page", value = "Page",
                     example = "3", required = true)
@@ -245,6 +272,10 @@ public class JweetController {
                             message =  "Invalid request"
                     ),
                     @ApiResponse(
+                            code = 401,
+                            message = "Not authorized"
+                    ),
+                    @ApiResponse(
                             code = 500,
                             message =  "Internal server error"
                     )
@@ -257,7 +288,7 @@ public class JweetController {
     public ResponseEntity<JweetCommentDto.Out> postJweetComment(
             @ApiParam(name = "id", value = "Jweet Id",
                     allowableValues = "range[1, infinity]",
-                    example = "1", required = true)
+                    example = "23", required = true)
             @PathVariable Long id,
             @RequestBody @Valid JweetCommentDto.CIn jweetCommentDto) {
         JweetComment jweetComment = jweetCRUDService.postJweetComment(id,
@@ -277,6 +308,10 @@ public class JweetController {
                     @ApiResponse(
                             code = 400,
                             message =  "Invalid request"
+                    ),
+                    @ApiResponse(
+                            code = 401,
+                            message = "Not authorized"
                     ),
                     @ApiResponse(
                             code = 500,
@@ -321,6 +356,10 @@ public class JweetController {
                             message =  "Invalid request"
                     ),
                     @ApiResponse(
+                            code = 401,
+                            message = "Not authorized"
+                    ),
+                    @ApiResponse(
                             code = 500,
                             message =  "Internal server error"
                     )
@@ -344,5 +383,44 @@ public class JweetController {
                 .status(HttpStatus.NO_CONTENT)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(null);
+    }
+
+    @ApiResponses(
+            {
+                    @ApiResponse(
+                            code = 200,
+                            message = "Jweet comment is liked successfully",
+                            response = JweetCommentDto.Out.class),
+                    @ApiResponse(
+                            code = 400,
+                            message =  "Invalid request"
+                    ),
+                    @ApiResponse(
+                            code = 401,
+                            message = "Not authorized"
+                    ),
+                    @ApiResponse(
+                            code = 500,
+                            message =  "Internal server error"
+                    )
+            }
+    )
+    @ApiOperation("Add one like to selected Jweet comment")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    @PostMapping("/{jweetId}/comment/{commentId}/like")
+    public ResponseEntity<JweetCommentDto.Out> likeJweetComment(
+            @ApiParam(name = "id", value = "Jweet Id",
+                    allowableValues = "range[1, infinity]",
+                    example = "23", required = true)
+            @PathVariable Long jweetId,
+            @ApiParam(name = "id", value = "Comment Id",
+                    allowableValues = "range[1, infinity]",
+                    example = "101", required = true)
+            @PathVariable  Long commentId) {
+        JweetComment jweetComment = jweetCRUDService.likeJweetComment(jweetId, commentId);
+        return ResponseEntity
+                .status(HttpStatus.ACCEPTED)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(JweetCommentDto.Out.fromEntity(jweetComment));
     }
 }
