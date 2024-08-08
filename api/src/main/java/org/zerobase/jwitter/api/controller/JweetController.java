@@ -138,7 +138,7 @@ public class JweetController {
     @ApiResponses(
             {
                     @ApiResponse(
-                            code = 200,
+                            code = 204,
                             message = "Jweet is deleted successfully"
                     ),
                     @ApiResponse(
@@ -409,11 +409,11 @@ public class JweetController {
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @PostMapping("/{jweetId}/comment/{commentId}/like")
     public ResponseEntity<JweetCommentDto.Out> likeJweetComment(
-            @ApiParam(name = "id", value = "Jweet Id",
+            @ApiParam(name = "jweetId", value = "Jweet Id",
                     allowableValues = "range[1, infinity]",
                     example = "23", required = true)
             @PathVariable Long jweetId,
-            @ApiParam(name = "id", value = "Comment Id",
+            @ApiParam(name = "commentId", value = "Comment Id",
                     allowableValues = "range[1, infinity]",
                     example = "101", required = true)
             @PathVariable  Long commentId) {

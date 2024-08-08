@@ -62,7 +62,14 @@ public class UserDto implements Serializable {
 
         @Singular
         @NotNull
-        @ApiModelProperty(value = "Roles", example = "['admin', 'user']", required = true)
+        @ApiModelProperty(value = "Roles",
+                example = "[        {\n" +
+                "            \"name\": \"admin\"\n" +
+                "        },\n" +
+                "        {\n" +
+                "            \"name\": \"user\"\n" +
+                "        }]",
+                required = true)
         private Set<Role> roles = new HashSet<>();
 
         public static User toEntity(SIn userDto) {
