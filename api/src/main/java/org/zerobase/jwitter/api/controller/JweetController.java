@@ -56,7 +56,7 @@ public class JweetController {
                     example = "1", required = true)
             Long id) {
         return ResponseEntity
-                .status(HttpStatus.ACCEPTED)
+                .status(HttpStatus.OK)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(JweetDto.Out.fromEntity(jweetCRUDService.readJweet(id)));
     }
@@ -82,7 +82,7 @@ public class JweetController {
                     )
             }
     )
-    @PreAuthorize("@writeJweetPermission.hasPermission(authentication, #jweet, '')")
+    @PreAuthorize("@writeJweetPermission.hasPermission(authentication, #jweetDto, '')")
     @PostMapping()
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<JweetDto.Out> postJweet(
@@ -117,7 +117,7 @@ public class JweetController {
                     )
             }
     )
-    @PreAuthorize("@writeJweetPermission.hasPermission(authentication, #jweetId, 'Jweet', '')")
+    @PreAuthorize("@writeJweetPermission.hasPermission(authentication, #id, 'Jweet', '')")
     @PutMapping("/{id}")
     public ResponseEntity<JweetDto.Out> editJweet(
             @PathVariable
@@ -130,7 +130,7 @@ public class JweetController {
             JweetDto.UIn jweetDto) {
         Jweet jweet = jweetCRUDService.editJweet(id, jweetDto.getText());
         return ResponseEntity
-                .status(HttpStatus.ACCEPTED)
+                .status(HttpStatus.OK)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(JweetDto.Out.fromEntity(jweet));
     }
@@ -203,7 +203,7 @@ public class JweetController {
             Long id) {
         Jweet jweet = jweetCRUDService.likeJweet(id);
         return ResponseEntity
-                .status(HttpStatus.ACCEPTED)
+                .status(HttpStatus.OK)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(JweetDto.Out.fromEntity(jweet));
     }
@@ -257,7 +257,7 @@ public class JweetController {
                 .pageSize(pageResult.getSize())
                 .build();
         return ResponseEntity
-                .status(HttpStatus.ACCEPTED)
+                .status(HttpStatus.OK)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(jweetCommentPageDto);
     }
@@ -320,7 +320,7 @@ public class JweetController {
             }
     )
     @ApiOperation("Edit the comment of selected Jweet")
-    @PreAuthorize("@writeJweetCommentPermission.hasPermission(authentication, #jweetComment, '')")
+    @PreAuthorize("@writeJweetCommentPermission.hasPermission(authentication, #commentId, 'JweetComment', '')")
     @PutMapping("/{jweetId}/comment/{commentId}")
     public ResponseEntity<JweetCommentDto.Out> editJweetComment(
             @ApiParam(name = "id", value = "Jweet Id",
@@ -340,7 +340,7 @@ public class JweetController {
                 commentId,
                 jweetCommentDto.getText());
         return ResponseEntity
-                .status(HttpStatus.ACCEPTED)
+                .status(HttpStatus.OK)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(JweetCommentDto.Out.fromEntity(jweetComment));
     }
@@ -419,7 +419,7 @@ public class JweetController {
             @PathVariable  Long commentId) {
         JweetComment jweetComment = jweetCRUDService.likeJweetComment(jweetId, commentId);
         return ResponseEntity
-                .status(HttpStatus.ACCEPTED)
+                .status(HttpStatus.OK)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(JweetCommentDto.Out.fromEntity(jweetComment));
     }

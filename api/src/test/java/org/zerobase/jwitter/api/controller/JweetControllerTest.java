@@ -10,6 +10,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.zerobase.jwitter.domain.model.User;
 import org.zerobase.jwitter.domain.repository.JweetCommentRepository;
@@ -28,6 +29,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@ActiveProfiles("test")
 @Slf4j
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @AutoConfigureMockMvc()
@@ -76,33 +78,30 @@ class JweetControllerTest {
         mockMvc.perform(post("/signup")
                         .content(youngJson)
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andDo(result -> {
                     authKeymap.put(young.getUsername(),
-                            Objects.requireNonNull(result.getResponse().getHeader("Authorization"))
-                                    .split(" ")[1]);
+                            Objects.requireNonNull(result.getResponse().getHeader("Authorization")));
                 });
         String hansJson = FileUtil.readFromFileToString("/users/hans.json");
         User hans = MapperUtil.deserializeUser(hansJson);
         mockMvc.perform(post("/signup")
                         .content(hansJson)
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andDo(result -> {
                     authKeymap.put(hans.getUsername(),
-                            Objects.requireNonNull(result.getResponse().getHeader("Authorization"))
-                                    .split(" ")[1]);
+                            Objects.requireNonNull(result.getResponse().getHeader("Authorization")));
                 });
         String averyJson = FileUtil.readFromFileToString("/users/avery.json");
         User avery = MapperUtil.deserializeUser(averyJson);
         mockMvc.perform(post("/signup")
                         .content(averyJson)
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andDo(result -> {
                     authKeymap.put(avery.getUsername(),
-                            Objects.requireNonNull(result.getResponse().getHeader("Authorization"))
-                                    .split(" ")[1]);
+                            Objects.requireNonNull(result.getResponse().getHeader("Authorization")));
                 });
         assertFalse(authKeymap.isEmpty());
         log.info("Test session token registry: {}", authKeymap.toString());
@@ -116,7 +115,7 @@ class JweetControllerTest {
                         .header("Authorization", authKeymap.get("young"))
                         .content(json)
                         .contentType((MediaType.APPLICATION_JSON)))
-                .andExpect(status().isOk());
+                .andExpect(status().isCreated());
     }
 
     @Order(101)
@@ -199,7 +198,7 @@ class JweetControllerTest {
                         .header("Authorization", authKeymap.get("avery"))
                         .content(json)
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
+                .andExpect(status().isCreated());
     }
 
 
@@ -221,7 +220,7 @@ class JweetControllerTest {
     void avery_deletes_one_comment() throws Exception {
         mockMvc.perform(delete("http://localhost:8080/v1/jweet/1/comment/1")
                         .header("Authorization", authKeymap.get("avery")))
-                .andExpect(status().isOk());
+                .andExpect(status().isNoContent());
     }
 
     @Order(305)
@@ -229,7 +228,7 @@ class JweetControllerTest {
     void young_delets_jweet_hence_no_comments_left() throws Exception {
         mockMvc.perform(delete("http://localhost:8080/v1/jweet/1")
                         .header("Authorization", authKeymap.get("young")))
-                .andExpect(status().isOk());
+                .andExpect(status().isNoContent());
 
         assertEquals(0, jweetCommentRepository.findAll().size());
     }

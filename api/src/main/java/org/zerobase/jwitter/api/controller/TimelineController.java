@@ -76,7 +76,7 @@ public class TimelineController {
                 .pageSize(pageResult.getSize())
                 .build();
         return ResponseEntity
-                .status(HttpStatus.ACCEPTED)
+                .status(HttpStatus.OK)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(jweetPageDto);
     }
@@ -126,7 +126,7 @@ public class TimelineController {
                 .pageSize(pageResult.getSize())
                 .build();
         return ResponseEntity
-                .status(HttpStatus.ACCEPTED)
+                .status(HttpStatus.OK)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(jweetPageDto);
     }

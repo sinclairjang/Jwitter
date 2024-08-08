@@ -3,7 +3,7 @@ package org.zerobase.jwitter.api.dto;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.*;
-import org.zerobase.jwitter.domain.aop.validation.Password;
+import org.zerobase.jwitter.api.aop.validation.Password;
 import org.zerobase.jwitter.domain.model.Role;
 import org.zerobase.jwitter.domain.model.User;
 

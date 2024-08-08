@@ -56,7 +56,7 @@ public class SocialController {
             Long id) {
         Set<User> followees = followService.getFollowees(id);
         return ResponseEntity
-                .status(HttpStatus.ACCEPTED)
+                .status(HttpStatus.OK)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(followees.stream()
                         .map(UserDto.Out::from)
@@ -110,7 +110,7 @@ public class SocialController {
                 .pageSize(pageResult.getSize())
                 .build();
         return ResponseEntity
-                .status(HttpStatus.ACCEPTED)
+                .status(HttpStatus.OK)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(userPageDto);
     }
@@ -142,7 +142,7 @@ public class SocialController {
             Long id) {
         Set<User> followers = followService.getFollowers(id);
         return ResponseEntity
-                .status(HttpStatus.ACCEPTED)
+                .status(HttpStatus.OK)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(followers.stream()
                         .map(UserDto.Out::from)
@@ -195,7 +195,7 @@ public class SocialController {
                 .pageSize(pageResult.getSize())
                 .build();
         return ResponseEntity
-                .status(HttpStatus.ACCEPTED)
+                .status(HttpStatus.OK)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(userPageDto);
     }
@@ -221,7 +221,7 @@ public class SocialController {
                     )
             }
     )
-    @org.zerobase.jwitter.domain.aop.validation.Follow
+    @org.zerobase.jwitter.api.aop.validation.Follow
     @PreAuthorize("@sessionOwnerPermission.hasPermission(authentication, #followerId, '')")
     @PostMapping("/follow")
     @ResponseStatus(HttpStatus.CREATED)
@@ -238,7 +238,7 @@ public class SocialController {
             Long followeeId) {
         Follow followInfo = followService.follow(followerId, followeeId);
         return ResponseEntity
-                .status(HttpStatus.ACCEPTED)
+                .status(HttpStatus.CREATED)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(FollowDto.from(followInfo));
     }
@@ -264,7 +264,7 @@ public class SocialController {
                     )
             }
     )
-    @org.zerobase.jwitter.domain.aop.validation.Follow
+    @org.zerobase.jwitter.api.aop.validation.Follow
     @PreAuthorize("@sessionOwnerPermission.hasPermission(authentication, #followerId, '')")
     @DeleteMapping("/unfollow")
     @ResponseStatus(HttpStatus.NO_CONTENT)
@@ -282,7 +282,7 @@ public class SocialController {
     ) {
         followService.unfollow(followerId, followeeId);
         return ResponseEntity
-                .status(HttpStatus.ACCEPTED)
+                .status(HttpStatus.NO_CONTENT)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(null);
     }

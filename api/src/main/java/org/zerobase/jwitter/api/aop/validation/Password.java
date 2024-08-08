@@ -1,6 +1,6 @@
-package org.zerobase.jwitter.domain.aop.validation;
+package org.zerobase.jwitter.api.aop.validation;
 
-import org.zerobase.jwitter.domain.aop.validation.impl.PasswordValidator;
+import org.zerobase.jwitter.api.aop.validation.impl.PasswordValidator;
 
 import javax.validation.Constraint;
 import javax.validation.Payload;

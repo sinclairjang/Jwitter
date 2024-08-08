@@ -8,8 +8,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.data.repository.Repository;
-import org.zerobase.jwitter.domain.aop.validation.exception.RedisInvalidCommandException;
-import org.zerobase.jwitter.domain.aop.validation.exception.RedisKeyNotExistException;
+import org.zerobase.jwitter.domain.exception.RedisInvalidCommandException;
+import org.zerobase.jwitter.domain.exception.RedisKeyNotExistException;
 import org.zerobase.jwitter.domain.model.cache.HomeTimelineCache;
 import org.zerobase.jwitter.domain.model.cache.JweetCache;
 

@@ -129,6 +129,7 @@ public class JweetCRUDService {
                         )
                 );
         persistentJweet.addJweetComments(comment);
+        jweetRepository.flush();
         return jweetCommentRepository.findById(comment.getId()).orElseThrow(
                 () -> new JweetCommentNotFoundException(
                         String.format("Jweet comment:%d does not exist.", jweetId)

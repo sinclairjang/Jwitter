@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 public class FollowService {
     private final FollowRepository followRepository;
 
-    @org.zerobase.jwitter.domain.aop.validation.Follow
+    @org.zerobase.jwitter.api.aop.validation.Follow
     public Follow follow(Long followerId, Long followeeId) {
         followRepository.findByIds(followerId, followeeId).ifPresent(
                 (follow) -> {

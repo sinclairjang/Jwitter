@@ -35,6 +35,7 @@ public class JweetCommentDto implements Serializable {
             return JweetComment.builder()
                     .commenterId(jweetCommentDto.getCommenterId())
                     .text(jweetCommentDto.getText())
+                    .likes(0L)
                     .build();
         }
     }

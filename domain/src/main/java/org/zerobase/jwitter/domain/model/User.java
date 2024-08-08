@@ -2,7 +2,6 @@ package org.zerobase.jwitter.domain.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
-import org.zerobase.jwitter.domain.aop.validation.Password;
 
 import javax.persistence.*;
 import javax.validation.constraints.Email;
@@ -12,7 +11,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 @JsonIgnoreProperties(value = {"id", "password", "passwordConfirm", "roles"}, allowSetters = true)
-@Password
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @ToString(onlyExplicitlyIncluded = true)
 @Data
@@ -39,7 +37,6 @@ public class User {
     private String email;
 
     @NotNull
-    @Size(min = 8, max = 20)
     private String password;
 
     @Transient

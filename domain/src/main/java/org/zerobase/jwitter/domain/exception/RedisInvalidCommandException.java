@@ -1,4 +1,4 @@
-package org.zerobase.jwitter.domain.aop.validation.exception;
+package org.zerobase.jwitter.domain.exception;
 
 import org.springframework.http.HttpStatus;
 

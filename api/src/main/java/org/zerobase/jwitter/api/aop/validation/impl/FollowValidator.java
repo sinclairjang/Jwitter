@@ -1,8 +1,7 @@
-package org.zerobase.jwitter.domain.aop.validation.impl;
+package org.zerobase.jwitter.api.aop.validation.impl;
 
-import org.springframework.http.HttpStatus;
-import org.zerobase.jwitter.domain.aop.validation.Follow;
-import org.zerobase.jwitter.domain.aop.validation.exception.FollowSelfException;
+import org.zerobase.jwitter.api.aop.exception.FollowSelfException;
+import org.zerobase.jwitter.api.aop.validation.Follow;
 
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
@@ -24,7 +23,7 @@ public class FollowValidator implements ConstraintValidator<Follow, Object[]> {
         }
 
         if (value[0].equals(value[1])) {
-            throw new FollowSelfException(HttpStatus.BAD_REQUEST,
+            throw new FollowSelfException(
                     String.format(
                             "User:%d can't follow oneself.", value[0]
                     )

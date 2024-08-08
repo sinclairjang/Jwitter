@@ -37,6 +37,7 @@ public class JweetDto implements Serializable {
             return Jweet.builder()
                     .authorId(jweetDto.getAuthorId())
                     .text(jweetDto.getText())
+                    .likes(0L)
                     .build();
         }
     }

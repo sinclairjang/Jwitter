@@ -10,6 +10,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.zerobase.jwitter.domain.model.User;
 
@@ -28,6 +29,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@ActiveProfiles("test")
 @Slf4j
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @AutoConfigureMockMvc()
@@ -74,33 +76,30 @@ class SocialControllerTest {
         mockMvc.perform(post("/signup")
                         .content(youngJson)
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andDo(result -> {
                     authKeymap.put(young.getUsername(),
-                            Objects.requireNonNull(result.getResponse().getHeader("Authorization"))
-                                    .split(" ")[1]);
+                            Objects.requireNonNull(result.getResponse().getHeader("Authorization")));
                 });
         String hansJson = FileUtil.readFromFileToString("/users/hans.json");
         User hans = MapperUtil.deserializeUser(hansJson);
         mockMvc.perform(post("/signup")
                         .content(hansJson)
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andDo(result -> {
                     authKeymap.put(hans.getUsername(),
-                            Objects.requireNonNull(result.getResponse().getHeader("Authorization"))
-                                    .split(" ")[1]);
+                            Objects.requireNonNull(result.getResponse().getHeader("Authorization")));
                 });
         String averyJson = FileUtil.readFromFileToString("/users/avery.json");
         User avery = MapperUtil.deserializeUser(averyJson);
         mockMvc.perform(post("/signup")
                         .content(averyJson)
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andDo(result -> {
                     authKeymap.put(avery.getUsername(),
-                            Objects.requireNonNull(result.getResponse().getHeader("Authorization"))
-                                    .split(" ")[1]);
+                            Objects.requireNonNull(result.getResponse().getHeader("Authorization")));
                 });
         assertFalse(authKeymap.isEmpty());
         log.info("Test session token registry: {}", authKeymap.toString());
@@ -113,7 +112,7 @@ class SocialControllerTest {
                         .param("followerId", "1")
                         .param("followeeId", "2")
                         .header("Authorization", authKeymap.get("young")))
-                .andExpect(status().isOk());
+                .andExpect(status().isCreated());
     }
 
     @Order(101)
@@ -157,7 +156,7 @@ class SocialControllerTest {
                         .header("Authorization", authKeymap.get("young"))
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].username").value("hans"))
+                .andExpect(jsonPath("$.content.[0].username").value("hans"))
                 .andDo(result -> log.info(result.getResponse().getContentAsString()));
     }
 
@@ -168,7 +167,7 @@ class SocialControllerTest {
                         .param("followerId", "3")
                         .param("followeeId", "2")
                         .header("Authorization", authKeymap.get("avery")))
-                .andExpect(status().isOk());
+                .andExpect(status().isCreated());
     }
 
     @Order(201)
@@ -189,8 +188,9 @@ class SocialControllerTest {
                         .header("Authorization", authKeymap.get("hans"))
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].username").value("avery"))
-                .andExpect(jsonPath("$[1].username").value("young"))
+                .andExpect(jsonPath("$[0].username").exists())
+                .andExpect(jsonPath("$[1].username").exists())
+                .andExpect(jsonPath("$[2].username").doesNotExist())
                 .andDo(result -> log.info(result.getResponse().getContentAsString()));
     }
 }

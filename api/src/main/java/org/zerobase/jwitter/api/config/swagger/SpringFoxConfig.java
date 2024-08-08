@@ -4,6 +4,7 @@ import com.fasterxml.classmate.TypeResolver;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
 import org.zerobase.jwitter.api.config.swagger.plugin.EmailAnnotationPlugin;
 import org.zerobase.jwitter.domain.model.Follow;
@@ -21,6 +22,7 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 import java.util.HashSet;
 import java.util.List;
 
+@Profile({"dev", "prod"})
 @EnableSwagger2
 @Import({BeanValidatorPluginsConfiguration.class, SpringDataRestConfiguration.class})
 @Configuration

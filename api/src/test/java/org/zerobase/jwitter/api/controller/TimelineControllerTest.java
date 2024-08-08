@@ -10,6 +10,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.zerobase.jwitter.domain.model.User;
 import org.zerobase.jwitter.domain.repository.cache.HomeTimelineCacheRepository;
@@ -25,11 +26,11 @@ import java.util.Map;
 import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@ActiveProfiles("test")
 @Slf4j
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @AutoConfigureMockMvc()
@@ -81,33 +82,30 @@ class TimelineControllerTest {
         mockMvc.perform(post("/signup")
                         .content(youngJson)
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andDo(result -> {
                     authKeymap.put(young.getUsername(),
-                            Objects.requireNonNull(result.getResponse().getHeader("Authorization"))
-                                    .split(" ")[1]);
+                            Objects.requireNonNull(result.getResponse().getHeader("Authorization")));
                 });
         String hansJson = FileUtil.readFromFileToString("/users/hans.json");
         User hans = MapperUtil.deserializeUser(hansJson);
         mockMvc.perform(post("/signup")
                         .content(hansJson)
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andDo(result -> {
                     authKeymap.put(hans.getUsername(),
-                            Objects.requireNonNull(result.getResponse().getHeader("Authorization"))
-                                    .split(" ")[1]);
+                            Objects.requireNonNull(result.getResponse().getHeader("Authorization")));
                 });
         String averyJson = FileUtil.readFromFileToString("/users/avery.json");
         User avery = MapperUtil.deserializeUser(averyJson);
         mockMvc.perform(post("/signup")
                         .content(averyJson)
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andDo(result -> {
                     authKeymap.put(avery.getUsername(),
-                            Objects.requireNonNull(result.getResponse().getHeader("Authorization"))
-                                    .split(" ")[1]);
+                            Objects.requireNonNull(result.getResponse().getHeader("Authorization")));
                 });
         assertFalse(authKeymap.isEmpty());
         log.info("Test session token registry: {}", authKeymap.toString());
@@ -120,7 +118,7 @@ class TimelineControllerTest {
                         .param("followerId", "3")
                         .param("followeeId", "2")
                         .header("Authorization", authKeymap.get("avery")))
-                .andExpect(status().isOk());
+                .andExpect(status().isCreated());
     }
 
     @Order(Integer.MIN_VALUE)
@@ -130,7 +128,7 @@ class TimelineControllerTest {
                         .param("followerId", "1")
                         .param("followeeId", "2")
                         .header("Authorization", authKeymap.get("young")))
-                .andExpect(status().isOk());
+                .andExpect(status().isCreated());
     }
 
     @Order(Integer.MIN_VALUE + 1)
@@ -141,7 +139,7 @@ class TimelineControllerTest {
                         .header("Authorization", authKeymap.get("hans"))
                         .content(json)
                         .contentType((MediaType.APPLICATION_JSON)))
-                .andExpect(status().isOk());
+                .andExpect(status().isCreated());
     }
 
     @Order(100)
@@ -175,11 +173,11 @@ class TimelineControllerTest {
     @Order(200)
     @Test
     void avery_unfollows_hans() throws Exception {
-        mockMvc.perform(post("http://localhost:8080/v1/social/unfollow")
+        mockMvc.perform(delete("http://localhost:8080/v1/social/unfollow")
                         .param("followerId", "3")
                         .param("followeeId", "2")
                         .header("Authorization", authKeymap.get("avery")))
-                .andExpect(status().isOk());
+                .andExpect(status().isNoContent());
     }
 
     @Order(201)
@@ -191,12 +189,12 @@ class TimelineControllerTest {
                         .header("Authorization", authKeymap.get("hans"))
                         .content(json)
                         .contentType((MediaType.APPLICATION_JSON)))
-                .andExpect(status().isOk());
+                .andExpect(status().isCreated());
     }
 
     @Order(202)
     @Test
-    void avery_doent_see_hans_new_jweet_now() throws Exception {
+    void avery_doesnt_see_hans_new_jweet_now() throws Exception {
         mockMvc.perform(get("http://localhost:8080/v1/home_timeline/3")
                         .param("cursor", "0")
                         .header("Authorization", authKeymap.get("avery"))
@@ -217,7 +215,7 @@ class TimelineControllerTest {
                         .header("Authorization", authKeymap.get("young"))
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content[0].id").value("jweet:4"))
+                .andExpect(jsonPath("$.content[0].id").value("4"))
                 .andExpect(jsonPath("$.content[1]").exists())
                 .andExpect(jsonPath("$.content[2]").exists())
                 .andExpect(jsonPath("$.content[3]").exists())
