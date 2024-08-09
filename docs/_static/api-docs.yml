@@ -1,0 +1,1081 @@
+swagger: '2.0'
+info:
+  description: Java implementation of Twitter's timeline service
+  version: '1.0'
+  title: Jwitter timeline REST API
+  contact:
+    name: Jwitter
+    url: >-
+      https://cuboid-tarantula-e0b.notion.site/Jwitter-e1968f7cf2f24369a9832103a7e44816
+    email: sinclairjang@gmail.com
+host: 'localhost:8080'
+basePath: /
+tags:
+  - name: Jweet Crud APIs
+    description: Jweet Controller
+  - name: Social  APIs
+    description: Social Controller
+  - name: Timeline  APIs
+    description: Timeline Controller
+  - name: User Login APIs
+    description: Login Controller
+consumes:
+  - application/json
+produces:
+  - application/json
+paths:
+  /login:
+    post:
+      tags:
+        - User Login APIs
+      summary: Login
+      operationId: loginUsingPOST
+      parameters:
+        - in: body
+          name: Json
+          description: Login request
+          required: true
+          schema:
+            $ref: '#/definitions/User login request'
+      responses:
+        '200':
+          description: Login complete
+          schema:
+            $ref: '#/definitions/User information'
+        '400':
+          description: Invalid request
+        '500':
+          description: Internal server error
+      security:
+        - Authorization:
+            - global
+  /signup:
+    post:
+      tags:
+        - User Login APIs
+      summary: Signup
+      operationId: signupUsingPOST
+      parameters:
+        - in: body
+          name: Json
+          description: Signup request
+          required: true
+          schema:
+            $ref: '#/definitions/User signup request'
+      responses:
+        '201':
+          description: Signup complete
+          schema:
+            $ref: '#/definitions/User information'
+        '400':
+          description: Invalid request
+        '500':
+          description: Internal server error
+      security:
+        - Authorization:
+            - global
+  '/v1/home_timeline/{id}':
+    get:
+      tags:
+        - Timeline  APIs
+      summary: Get your home timeline
+      operationId: getHomeTimelineUsingGET
+      parameters:
+        - name: cursor
+          in: query
+          description: Scrolling cursor
+          required: true
+          type: integer
+          exclusiveMaximum: false
+          minimum: 0
+          exclusiveMinimum: false
+          format: int32
+          x-example: 3
+        - name: id
+          in: path
+          description: User Id
+          required: true
+          type: integer
+          exclusiveMaximum: false
+          minimum: 1
+          exclusiveMinimum: false
+          format: int64
+          x-example: 1
+      responses:
+        '200':
+          description: Request successful
+          schema:
+            $ref: '#/definitions/Jweet comment page response'
+        '400':
+          description: Invalid request
+        '401':
+          description: Not authorized
+        '500':
+          description: Internal server error
+      security:
+        - Authorization:
+            - global
+  /v1/jweet:
+    post:
+      tags:
+        - Jweet Crud APIs
+      summary: Post Jweet
+      operationId: postJweetUsingPOST
+      parameters:
+        - in: body
+          name: Json
+          description: Jweet post request
+          required: true
+          schema:
+            $ref: '#/definitions/Jweet create request'
+      responses:
+        '201':
+          description: Jweet is posted successfully
+          schema:
+            $ref: '#/definitions/Jweet CRU response'
+        '400':
+          description: Invalid request
+        '401':
+          description: Not authorized
+        '500':
+          description: Internal server error
+      security:
+        - Authorization:
+            - global
+  '/v1/jweet/{id}':
+    get:
+      tags:
+        - Jweet Crud APIs
+      summary: Read Jweet
+      operationId: readJweetUsingGET
+      parameters:
+        - name: id
+          in: path
+          description: Jweet Id
+          required: true
+          type: integer
+          exclusiveMaximum: false
+          minimum: 1
+          exclusiveMinimum: false
+          format: int64
+          x-example: 1
+      responses:
+        '200':
+          description: Jweet is read successfully
+          schema:
+            $ref: '#/definitions/Jweet CRU response'
+        '401':
+          description: Not authorized
+        '404':
+          description: Requested Jweet is not found
+        '500':
+          description: Internal server error
+      security:
+        - Authorization:
+            - global
+    put:
+      tags:
+        - Jweet Crud APIs
+      summary: Edit Jweet
+      operationId: editJweetUsingPUT
+      parameters:
+        - name: id
+          in: path
+          description: Jweet Id
+          required: true
+          type: integer
+          exclusiveMaximum: false
+          minimum: 1
+          exclusiveMinimum: false
+          format: int64
+          x-example: 1
+        - in: body
+          name: Json
+          description: Jweet update request
+          required: true
+          schema:
+            $ref: '#/definitions/Jweet update request'
+      responses:
+        '200':
+          description: Jweet is updated successfully
+          schema:
+            $ref: '#/definitions/Jweet CRU response'
+        '400':
+          description: Invalid request
+        '401':
+          description: Not authorized
+        '500':
+          description: Internal server error
+      security:
+        - Authorization:
+            - global
+    delete:
+      tags:
+        - Jweet Crud APIs
+      summary: Delete Jweet
+      operationId: deleteJweetUsingDELETE
+      parameters:
+        - name: id
+          in: path
+          description: Jweet Id
+          required: true
+          type: integer
+          exclusiveMaximum: false
+          minimum: 1
+          exclusiveMinimum: false
+          format: int64
+          x-example: 1
+      responses:
+        '204':
+          description: Jweet is deleted successfully
+          schema:
+            type: object
+        '400':
+          description: Invalid request
+        '401':
+          description: Not authorized
+        '500':
+          description: Internal server error
+      security:
+        - Authorization:
+            - global
+  '/v1/jweet/{id}/comment':
+    get:
+      tags:
+        - Jweet Crud APIs
+      summary: Read the comments of selected Jweet
+      operationId: readJweetCommentsUsingGET
+      parameters:
+        - name: id
+          in: path
+          description: Jweet Id
+          required: true
+          type: integer
+          exclusiveMaximum: false
+          minimum: 1
+          exclusiveMinimum: false
+          format: int64
+          x-example: 23
+        - name: page
+          in: query
+          description: Page
+          required: true
+          type: integer
+          format: int32
+          x-example: 3
+        - name: size
+          in: query
+          description: Size
+          required: true
+          type: integer
+          format: int32
+          x-example: 5
+      responses:
+        '200':
+          description: Jweet comment is read successfully
+          schema:
+            $ref: '#/definitions/Jweet comment page response'
+        '400':
+          description: Invalid request
+        '401':
+          description: Not authorized
+        '500':
+          description: Internal server error
+      security:
+        - Authorization:
+            - global
+    post:
+      tags:
+        - Jweet Crud APIs
+      summary: Post the comment to selected Jweet
+      operationId: postJweetCommentUsingPOST
+      parameters:
+        - name: id
+          in: path
+          description: Jweet Id
+          required: true
+          type: integer
+          exclusiveMaximum: false
+          minimum: 1
+          exclusiveMinimum: false
+          format: int64
+          x-example: 23
+        - in: body
+          name: jweetCommentDto
+          description: jweetCommentDto
+          required: true
+          schema:
+            $ref: '#/definitions/Jweet comment create request'
+      responses:
+        '201':
+          description: Jweet comment is created successfully
+          schema:
+            $ref: '#/definitions/Jweet comment CRU response'
+        '400':
+          description: Invalid request
+        '401':
+          description: Not authorized
+        '500':
+          description: Internal server error
+      security:
+        - Authorization:
+            - global
+  '/v1/jweet/{id}/like':
+    post:
+      tags:
+        - Jweet Crud APIs
+      summary: Add one like to selected Jweet
+      operationId: likeJweetUsingPOST
+      parameters:
+        - name: id
+          in: path
+          description: Jweet Id
+          required: true
+          type: integer
+          exclusiveMaximum: false
+          minimum: 1
+          exclusiveMinimum: false
+          format: int64
+          x-example: 1
+      responses:
+        '200':
+          description: Jweet is liked successfully
+          schema:
+            $ref: '#/definitions/Jweet CRU response'
+        '400':
+          description: Invalid request
+        '401':
+          description: Not authorized
+        '500':
+          description: Internal server error
+      security:
+        - Authorization:
+            - global
+  '/v1/jweet/{jweetId}/comment/{commentId}':
+    put:
+      tags:
+        - Jweet Crud APIs
+      summary: Edit the comment of selected Jweet
+      operationId: editJweetCommentUsingPUT
+      parameters:
+        - name: id
+          in: path
+          description: Jweet Id
+          required: true
+          type: integer
+          exclusiveMaximum: false
+          minimum: 1
+          exclusiveMinimum: false
+          format: int64
+          x-example: 23
+        - in: body
+          name: Json
+          description: Jweet comment update request
+          required: true
+          schema:
+            $ref: '#/definitions/Jweet comment update request'
+      responses:
+        '200':
+          description: Jweet comment is updated successfully
+          schema:
+            $ref: '#/definitions/Jweet comment CRU response'
+        '400':
+          description: Invalid request
+        '401':
+          description: Not authorized
+        '500':
+          description: Internal server error
+      security:
+        - Authorization:
+            - global
+    delete:
+      tags:
+        - Jweet Crud APIs
+      summary: Delete the comment from selected Jweet
+      operationId: deleteJweetCommentUsingDELETE
+      parameters:
+        - name: id
+          in: path
+          description: Jweet Id
+          required: true
+          type: integer
+          exclusiveMaximum: false
+          minimum: 1
+          exclusiveMinimum: false
+          format: int64
+          x-example: 23
+      responses:
+        '204':
+          description: Jweet comment is deleted successfully
+          schema:
+            type: object
+        '400':
+          description: Invalid request
+        '401':
+          description: Not authorized
+        '500':
+          description: Internal server error
+      security:
+        - Authorization:
+            - global
+  '/v1/jweet/{jweetId}/comment/{commentId}/like':
+    post:
+      tags:
+        - Jweet Crud APIs
+      summary: Add one like to selected Jweet comment
+      operationId: likeJweetCommentUsingPOST
+      parameters:
+        - name: commentId
+          in: path
+          description: Comment Id
+          required: true
+          type: integer
+          exclusiveMaximum: false
+          minimum: 1
+          exclusiveMinimum: false
+          format: int64
+          x-example: 101
+        - name: jweetId
+          in: path
+          description: Jweet Id
+          required: true
+          type: integer
+          exclusiveMaximum: false
+          minimum: 1
+          exclusiveMinimum: false
+          format: int64
+          x-example: 23
+      responses:
+        '200':
+          description: Jweet comment is liked successfully
+          schema:
+            $ref: '#/definitions/Jweet comment CRU response'
+        '400':
+          description: Invalid request
+        '401':
+          description: Not authorized
+        '500':
+          description: Internal server error
+      security:
+        - Authorization:
+            - global
+  '/v1/social/all_followees/{id}':
+    get:
+      tags:
+        - Social  APIs
+      summary: Get all the users you follow
+      operationId: getFolloweesUsingGET
+      parameters:
+        - name: id
+          in: path
+          description: User Id
+          required: true
+          type: integer
+          exclusiveMaximum: false
+          minimum: 1
+          exclusiveMinimum: false
+          format: int64
+          x-example: 10789
+      responses:
+        '200':
+          description: Request successful
+          schema:
+            type: array
+            uniqueItems: true
+            items:
+              $ref: '#/definitions/User information'
+        '401':
+          description: Not authorized
+        '500':
+          description: Internal server error
+      security:
+        - Authorization:
+            - global
+  '/v1/social/all_followers/{id}':
+    get:
+      tags:
+        - Social  APIs
+      summary: Get all the users who follow you
+      operationId: getFollowersUsingGET
+      parameters:
+        - name: id
+          in: path
+          description: User Id
+          required: true
+          type: integer
+          exclusiveMaximum: false
+          minimum: 1
+          exclusiveMinimum: false
+          format: int64
+          x-example: 10789
+      responses:
+        '200':
+          description: Request successful
+          schema:
+            type: array
+            uniqueItems: true
+            items:
+              $ref: '#/definitions/User information'
+        '401':
+          description: Not authorized
+        '500':
+          description: Internal server error
+      security:
+        - Authorization:
+            - global
+  /v1/social/follow:
+    post:
+      tags:
+        - Social  APIs
+      summary: Follow another user
+      operationId: followUsingPOST
+      parameters:
+        - name: followeeId
+          in: query
+          description: Followee Id
+          required: true
+          type: integer
+          exclusiveMaximum: false
+          minimum: 1
+          exclusiveMinimum: false
+          format: int64
+          x-example: 3412
+        - name: followerId
+          in: query
+          description: Follower Id
+          required: true
+          type: integer
+          exclusiveMaximum: false
+          minimum: 1
+          exclusiveMinimum: false
+          format: int64
+          x-example: 137
+      responses:
+        '201':
+          description: Follow successful
+          schema:
+            $ref: '#/definitions/Follow information'
+        '400':
+          description: Invalid request
+        '401':
+          description: Not authorized
+        '500':
+          description: Internal server error
+      security:
+        - Authorization:
+            - global
+  '/v1/social/followees/{id}':
+    get:
+      tags:
+        - Social  APIs
+      summary: Get some of the users you follow
+      operationId: getFolloweesByPageUsingGET
+      parameters:
+        - name: id
+          in: path
+          description: User Id
+          required: true
+          type: integer
+          exclusiveMaximum: false
+          minimum: 1
+          exclusiveMinimum: false
+          format: int64
+          x-example: 10789
+        - name: page
+          in: query
+          description: Page
+          required: true
+          type: integer
+          format: int32
+          x-example: 3
+        - name: size
+          in: query
+          description: Size
+          required: true
+          type: integer
+          format: int32
+          x-example: 5
+      responses:
+        '200':
+          description: Request successful
+          schema:
+            $ref: '#/definitions/User page response'
+        '401':
+          description: Not authorized
+        '500':
+          description: Internal server error
+      security:
+        - Authorization:
+            - global
+  '/v1/social/followers/{id}':
+    get:
+      tags:
+        - Social  APIs
+      summary: Get some of the users who follow you
+      operationId: getFollowersByPageUsingGET
+      parameters:
+        - name: id
+          in: path
+          description: User Id
+          required: true
+          type: integer
+          exclusiveMaximum: false
+          minimum: 1
+          exclusiveMinimum: false
+          format: int64
+          x-example: 10789
+        - name: page
+          in: query
+          description: Page
+          required: true
+          type: integer
+          format: int32
+          x-example: 3
+        - name: size
+          in: query
+          description: Size
+          required: true
+          type: integer
+          format: int32
+          x-example: 5
+      responses:
+        '200':
+          description: Request successful
+          schema:
+            $ref: '#/definitions/User page response'
+        '401':
+          description: Not authorized
+        '500':
+          description: Internal server error
+      security:
+        - Authorization:
+            - global
+  /v1/social/unfollow:
+    delete:
+      tags:
+        - Social  APIs
+      summary: Unfollow another user
+      operationId: unfollowUsingDELETE
+      parameters:
+        - name: followeeId
+          in: query
+          description: Followee Id
+          required: true
+          type: integer
+          exclusiveMaximum: false
+          minimum: 1
+          exclusiveMinimum: false
+          format: int64
+          x-example: 3412
+        - name: followerId
+          in: query
+          description: Follower Id
+          required: true
+          type: integer
+          exclusiveMaximum: false
+          minimum: 1
+          exclusiveMinimum: false
+          format: int64
+          x-example: 137
+      responses:
+        '204':
+          description: Unfollow successful
+          schema:
+            type: object
+        '400':
+          description: Invalid request
+        '401':
+          description: Not authorized
+        '500':
+          description: Internal server error
+      security:
+        - Authorization:
+            - global
+  '/v1/user_timeline/{id}':
+    get:
+      tags:
+        - Timeline  APIs
+      summary: Get user timeline
+      operationId: geUserTimelineUsingGET
+      parameters:
+        - name: cursor
+          in: query
+          description: Scrolling cursor
+          required: true
+          type: integer
+          exclusiveMaximum: false
+          minimum: 0
+          exclusiveMinimum: false
+          format: int32
+          x-example: 3
+        - name: id
+          in: path
+          description: User Id
+          required: true
+          type: integer
+          exclusiveMaximum: false
+          minimum: 1
+          exclusiveMinimum: false
+          format: int64
+          x-example: 1
+      responses:
+        '200':
+          description: Request successful
+          schema:
+            $ref: '#/definitions/Jweet comment page response'
+        '400':
+          description: Invalid request
+        '401':
+          description: Not authorized
+        '500':
+          description: Internal server error
+      security:
+        - Authorization:
+            - global
+securityDefinitions:
+  Authorization:
+    type: apiKey
+    name: Authorization
+    in: header
+definitions:
+  Another user information:
+    type: object
+    required:
+      - email
+      - id
+      - username
+    properties:
+      email:
+        type: string
+        example: sam0124@gmail.com
+        description: Email
+        pattern: .*@.*\..*
+      id:
+        type: integer
+        format: int64
+        example: 3412
+        description: User Id
+        minimum: 1
+        exclusiveMinimum: false
+      username:
+        type: string
+        example: samuel
+        description: User Name
+        minLength: 2
+        maxLength: 48
+    title: Another user information
+  Follow:
+    type: object
+    properties:
+      followee:
+        $ref: '#/definitions/User'
+      follower:
+        $ref: '#/definitions/User'
+    title: Follow
+  Follow information:
+    type: object
+    required:
+      - followee
+      - follower
+    properties:
+      followee:
+        description: followee information
+        $ref: '#/definitions/Another user information'
+      follower:
+        description: follower information
+        $ref: '#/definitions/User information'
+    title: Follow information
+  Jweet CRU response:
+    type: object
+    required:
+      - authorId
+      - createdAt
+      - id
+      - likes
+      - text
+    properties:
+      authorId:
+        type: integer
+        format: int64
+        example: 13
+        description: Author Id
+        minimum: 1
+        exclusiveMinimum: false
+      createdAt:
+        type: string
+        example: '2018-02-21 12:00:00 PM'
+        description: Created At
+        pattern: 'yyyy-MM-dd hh:mm:ss a'
+      id:
+        type: integer
+        format: int64
+        example: 1
+        description: Jweet Id
+        minimum: 1
+        exclusiveMinimum: false
+      likes:
+        type: integer
+        format: int64
+        example: 10
+        description: Likes
+        minimum: 0
+        exclusiveMinimum: false
+      text:
+        type: string
+        example: Hello!
+        description: Text
+        minLength: 0
+        maxLength: 280
+    title: Jweet CRU response
+  Jweet comment CRU response:
+    type: object
+    required:
+      - commenterId
+      - createdAt
+      - id
+      - jweetId
+      - likes
+      - text
+    properties:
+      commenterId:
+        type: integer
+        format: int64
+        example: 3721
+      createdAt:
+        type: string
+        example: '2018-02-21 12:00:00 PM'
+        pattern: 'yyyy-MM-dd hh:mm:ss a'
+      id:
+        type: integer
+        format: int64
+        example: 101
+      jweetId:
+        type: integer
+        format: int64
+        example: 23
+      likes:
+        type: integer
+        format: int64
+        example: 0
+        minimum: 0
+        exclusiveMinimum: false
+      text:
+        type: string
+        example: I like your post!
+        minLength: 0
+        maxLength: 280
+    title: Jweet comment CRU response
+  Jweet comment create request:
+    type: object
+    required:
+      - commenterId
+      - text
+    properties:
+      commenterId:
+        type: integer
+        format: int64
+        example: 3721
+      text:
+        type: string
+        example: I like your post!
+        minLength: 0
+        maxLength: 280
+    title: Jweet comment create request
+  Jweet comment page response:
+    type: object
+    properties:
+      content:
+        type: array
+        items:
+          $ref: '#/definitions/Jweet CRU response'
+      currentPage:
+        type: integer
+        format: int32
+        example: 1
+      pageSize:
+        type: integer
+        format: int32
+        example: 5
+      totalElements:
+        type: integer
+        format: int64
+        example: 20
+      totalPage:
+        type: integer
+        format: int32
+        example: 4
+    title: Jweet comment page response
+  Jweet comment update request:
+    type: object
+    required:
+      - text
+    properties:
+      text:
+        type: string
+        example: I like your post!
+        minLength: 0
+        maxLength: 280
+    title: Jweet comment update request
+  Jweet create request:
+    type: object
+    required:
+      - authorId
+      - text
+    properties:
+      authorId:
+        type: integer
+        format: int64
+        example: 13
+        description: Author Id
+      text:
+        type: string
+        example: Hello!
+        description: Text
+        minLength: 0
+        maxLength: 280
+    title: Jweet create request
+  Jweet update request:
+    type: object
+    required:
+      - text
+    properties:
+      text:
+        type: string
+        example: Hello!
+        description: Text
+        minLength: 0
+        maxLength: 280
+    title: Jweet update request
+  Role:
+    type: object
+    properties:
+      name:
+        type: string
+        enum:
+          - admin
+          - user
+    title: Role
+  User:
+    type: object
+    required:
+      - email
+      - username
+    properties:
+      email:
+        type: string
+        example: email@email.com
+        pattern: .*@.*\..*
+      username:
+        type: string
+        minLength: 2
+        maxLength: 48
+    title: User
+  User information:
+    type: object
+    required:
+      - email
+      - id
+      - username
+    properties:
+      email:
+        type: string
+        example: sinclairjang@gmail.com
+        description: Email
+        pattern: .*@.*\..*
+      id:
+        type: integer
+        format: int64
+        example: 137
+        description: User Id
+        minimum: 1
+        exclusiveMinimum: false
+      username:
+        type: string
+        example: gomawoe
+        description: User Name
+        minLength: 2
+        maxLength: 48
+    title: User information
+  User login request:
+    type: object
+    required:
+      - password
+      - username
+    properties:
+      password:
+        type: string
+        example: 1004nalgae
+        description: Password
+        minLength: 8
+        maxLength: 20
+      username:
+        type: string
+        example: gomawoe
+        description: User Name
+        minLength: 2
+        maxLength: 48
+    title: User login request
+  User page response:
+    type: object
+    properties:
+      content:
+        type: array
+        items:
+          $ref: '#/definitions/User information'
+      currentPage:
+        type: integer
+        format: int32
+        example: 1
+      pageSize:
+        type: integer
+        format: int32
+        example: 5
+      totalElements:
+        type: integer
+        format: int64
+        example: 20
+      totalPage:
+        type: integer
+        format: int32
+        example: 4
+    title: User page response
+  User signup request:
+    type: object
+    required:
+      - email
+      - password
+      - passwordConfirm
+      - roles
+      - username
+    properties:
+      email:
+        type: string
+        example: sinclairjang@gmail.com
+        description: Email
+        pattern: .*@.*\..*
+      password:
+        type: string
+        example: 1004nalgae
+        description: Password
+        minLength: 8
+        maxLength: 20
+      passwordConfirm:
+        type: string
+        example: 1004nalgae
+        description: Password Confirmation
+      roles:
+        type: array
+        example:
+          - name: admin
+          - name: user
+        description: Roles
+        uniqueItems: true
+        items:
+          $ref: '#/definitions/Role'
+      username:
+        type: string
+        example: gomawoe
+        description: User Name
+        minLength: 2
+        maxLength: 48
+    title: User signup request
